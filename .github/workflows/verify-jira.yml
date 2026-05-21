@@ -1,0 +1,42 @@
+name: Verify Jira Secrets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate required secrets are present
+        shell: bash
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$JIRA_BASE_URL" ]]; then echo "Missing secret: JIRA_BASE_URL"; exit 2; fi
+          if [[ -z "$JIRA_EMAIL" ]]; then echo "Missing secret: JIRA_EMAIL"; exit 2; fi
+          if [[ -z "$JIRA_API_TOKEN" ]]; then echo "Missing secret: JIRA_API_TOKEN"; exit 2; fi
+          echo "Secrets present ✅ (values not printed)"
+
+      - name: Verify Jira connection (calls /rest/api/3/myself)
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
+        run: |
+          python tools/jira/verify_connection.py
