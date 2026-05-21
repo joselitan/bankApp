@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GitHub Actions Setup — AI Sprint Orchestration</title>
+  <meta name="description" content="How to run the AI-agent sprint orchestration approach via GitHub Actions, including secrets, modes, and safe rollout steps." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>GitHub Actions Setup</h1>
+          <p>Run sprint planning + Jira automation from CI (safe, repeatable)</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Page navigation">
+        <a href="./index.html">← Overview</a>
+        <a href="./sprint-orchestration.html">Sprint loop</a>
+        <a href="#prereqs">Prereqs</a>
+        <a href="#secrets">Secrets</a>
+        <a href="#modes">Modes</a>
+        <a href="#status">Status</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="card">
+        <div class="kicker">Goal</div>
+        <h2>Make Jira → Sprint planning automation reproducible via Actions</h2>
+        <p class="lead">
+          This page documents what you need to wire up GitHub Actions so an orchestrator workflow can read
+          from Jira, generate sprint plans, and (optionally) update Jira statuses—without manual steps.
+        </p>
+        <div class="meta">
+          <span class="pill"><span class="badge brand">Start</span> Plan-only</span>
+          <span class="pill"><span class="badge warn">Then</span> Jira updates</span>
+          <span class="pill"><span class="badge ok">Eventually</span> PR automation</span>
+        </div>
+      </div>
+      <aside class="card" style="padding:18px 18px;">
+        <div class="kicker">Safety first</div>
+        <div class="callout" style="margin-top:10px;">
+          <strong>Recommendation:</strong> begin with a workflow that only generates a sprint plan artifact (no Jira writes).
+        </div>
+        <div class="callout" style="margin-top:10px;">
+          When you’re confident, enable Jira writes (comments/transitions). Only later add auto-PR creation.
+        </div>
+      </aside>
+    </section>
+
+    <section id="prereqs" class="card section">
+      <h3>1) Prerequisites</h3>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6" style="background: rgba(255,255,255,.03);">
+          <h4>GitHub</h4>
+          <ul>
+            <li>A GitHub repository containing this project</li>
+            <li>Actions enabled for the repository</li>
+          </ul>
+        </div>
+        <div class="card block col-6" style="background: rgba(255,255,255,.03);">
+          <h4>Jira</h4>
+          <ul>
+            <li>Jira Cloud site (example): https://joselitan.atlassian.net</li>
+            <li>Project key: BAN</li>
+            <li>Atlassian API token created from your Atlassian account</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="secrets" class="card section">
+      <h3>2) GitHub Actions secrets to create</h3>
+      <p>
+        Add these in <span class="badge">Repo Settings → Secrets and variables → Actions</span>.
+        Never commit tokens into the repo.
+      </p>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-12">
+          <h4>Required secrets</h4>
+          <div class="code">JIRA_BASE_URL = https://joselitan.atlassian.net
+JIRA_EMAIL = (your Atlassian email)
+JIRA_API_TOKEN = (create at id.atlassian.com/manage-profile/security/api-tokens)</div>
+        </div>
+        <div class="card block col-12">
+          <h4>Optional (nice to have)</h4>
+          <div class="code">JIRA_PROJECT_KEY = BAN</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:12px;">
+        <strong>Tip:</strong> API token should have the minimum access needed (read-only for Mode 1).
+      </div>
+    </section>
+
+    <section id="modes" class="card section">
+      <h3>3) Automation modes (choose your comfort level)</h3>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6">
+          <h4>Mode 1 — Plan-only <span class="badge ok">Recommended start</span></h4>
+          <ul>
+            <li>Reads Jira backlog via JQL</li>
+            <li>Generates <span class="badge">SPRINT_PLAN.md</span> and uploads as an artifact or opens a PR</li>
+            <li>No Jira writes</li>
+          </ul>
+        </div>
+        <div class="card block col-6">
+          <h4>Mode 2 — Plan + update Jira</h4>
+          <ul>
+            <li>Adds comments to stories with plan/PR links</li>
+            <li>Transitions statuses (forward-only) based on PR/CI outcomes</li>
+            <li>Still no auto-merge to main</li>
+          </ul>
+        </div>
+        <div class="card block col-12">
+          <h4>Mode 3 — Plan + implement (PR automation)</h4>
+          <ul>
+            <li>Agent creates branches/PRs per story</li>
+            <li>CI validates; humans review/merge (recommended at first)</li>
+            <li>Most powerful—and easiest to misuse without guardrails</li>
+          </ul>
+          <div class="callout"><strong>Guardrail:</strong> PRs only. Never direct push to main.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="status" class="card section">
+      <h3>4) Status (what’s done vs what’s next)</h3>
+      <p>This is a lightweight checklist you can update as the project evolves.</p>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6">
+          <h4>Accomplished</h4>
+          <ul>
+            <li>Jira connectivity verified</li>
+            <li>BAN backlog created (epics + stories) with strong Acceptance Criteria</li>
+            <li>Documentation site created in <span class="badge">doc/</span> (overview + sprint loop)</li>
+            <li>New epics created: <span class="badge">BAN-28</span> (Frontend UI/UX), <span class="badge">BAN-29</span> (QA/Automation)</li>
+          </ul>
+        </div>
+        <div class="card block col-6">
+          <h4>Next up (recommended order)</h4>
+          <ul>
+            <li>Create/push the project to a GitHub repository</li>
+            <li>Add the Jira secrets in GitHub Actions</li>
+            <li>Implement Mode 1 workflow (generate sprint plan from Jira)</li>
+            <li>Later: enable Mode 2 (comments/status transitions)</li>
+            <li>Later: enable Mode 3 (auto-PR creation per story)</li>
+          </ul>
+        </div>
+      </div>
+
+      <hr />
+      <div class="footer">
+        <div class="footer-nav" aria-label="Doc navigation">
+          <a href="./index.html">Overview</a>
+          <a href="./sprint-orchestration.html">Sprint loop</a>
+          <a href="./github-actions.html" aria-current="page">GitHub Actions</a>
+        </div>
+        <div class="small">This checklist is intentionally simple—treat it as your “automation roadmap”.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

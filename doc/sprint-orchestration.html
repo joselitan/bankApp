@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sprint Orchestration with AI Agents — SecureCore Bank</title>
+  <meta name="description" content="An operating model for using AI agents to plan sprints from Jira, implement stories, run tests, update Jira, and iterate to the next sprint safely." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Sprint Orchestration with AI Agents</h1>
+          <p>Jira backlog → sprint plan → PRs → CI → Jira updates → next sprint</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Page navigation">
+        <a href="./index.html">← Back to overview</a>
+        <a href="#model">Model</a>
+        <a href="#team">Agent team</a>
+        <a href="#loop">Sprint loop</a>
+        <a href="#guardrails">Guardrails</a>
+        <a href="#mvp">MVP rollout</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="card">
+        <div class="kicker">What this page adds</div>
+        <h2>A practical operating system for running “agent sprints”</h2>
+        <p class="lead">
+          The overview page lists useful agent types. This page shows how to run them like a team:
+          planning from Jira, executing work as PRs, validating via CI, transitioning Jira tickets,
+          closing the sprint, and selecting the next sprint.
+        </p>
+        <div class="meta">
+          <span class="pill"><span class="badge brand">Source of truth</span> Jira backlog</span>
+          <span class="pill"><span class="badge brand">Execution</span> PRs in your repo</span>
+          <span class="pill"><span class="badge warn">Truth detector</span> CI + tests</span>
+        </div>
+      </div>
+
+      <aside class="card" style="padding:18px 18px;">
+        <div class="kicker">Quick checklist</div>
+        <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+          <div class="callout"><strong>Small PRs:</strong> 1 story per PR (or smaller).</div>
+          <div class="callout"><strong>Green CI:</strong> no “Done” without passing tests.</div>
+          <div class="callout"><strong>Human gates:</strong> approve sprint plan + merge PRs (initially).</div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="model" class="card section">
+      <h3>1) The core operating model</h3>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6" style="background: rgba(255,255,255,.03);">
+          <h4>Inputs agents read</h4>
+          <ul>
+            <li>Jira issues (Epics/Stories): descriptions, acceptance criteria, priority, dependencies</li>
+            <li>Sprint context: capacity, sprint goal, definition of done (DoD), constraints</li>
+            <li>Repo state: architecture, current tests, CI results, existing docs</li>
+          </ul>
+        </div>
+        <div class="card block col-6" style="background: rgba(255,255,255,.03);">
+          <h4>Outputs agents produce</h4>
+          <ul>
+            <li>PRs with code + tests + minimal docs</li>
+            <li>Jira updates: comments, status transitions, links to PR/CI</li>
+            <li>Sprint report: shipped items, known issues, carryover, risks</li>
+          </ul>
+        </div>
+        <div class="col-12">
+          <div class="callout">
+            <strong>Key rule:</strong> Jira is the work queue, but the repo + CI are the truth.
+            Agents should optimize for small increments that keep CI green.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="team" class="card section">
+      <h3>2) The agent team (roles you can scale)</h3>
+      <p>
+        Avoid a single “mega agent”. Use small specialists with clear responsibilities.
+        Your orchestrator coordinates. Worker agents build and validate.
+      </p>
+
+      <div class="grid" style="margin-top:12px;">
+        <article class="card block col-6">
+          <h4>Sprint Orchestrator Agent <span class="badge ok">Coordinator</span></h4>
+          <ul>
+            <li>Select sprint scope from Jira based on priority + dependencies</li>
+            <li>Create a sprint plan and assign stories to worker agents</li>
+            <li>Track progress, handle retries, escalate blockers</li>
+          </ul>
+          <div class="code">Output: SPRINT_PLAN.md + work queue + status updates</div>
+        </article>
+
+        <article class="card block col-6">
+          <h4>Backlog Groomer Agent</h4>
+          <ul>
+            <li>Ensures each story is implementable (clear AC, API shape, non-goals)</li>
+            <li>Adds missing negative cases and boundary checks</li>
+            <li>Suggests subtasks (backend/ui/tests) where helpful</li>
+          </ul>
+          <div class="code">Output: upgraded Jira descriptions + readiness notes</div>
+        </article>
+
+        <article class="card block col-6">
+          <h4>Developer Agents (Backend / Frontend / Security)</h4>
+          <ul>
+            <li>Implement story requirements in small PRs</li>
+            <li>Prefer simplest working solution aligned with stack (Flask, JS)</li>
+            <li>Document decisions (API responses, error codes, assumptions)</li>
+          </ul>
+          <div class="code">Output: PR per story, "definition of done" checklist completed</div>
+        </article>
+
+        <article class="card block col-6">
+          <h4>Test Engineer Agent</h4>
+          <ul>
+            <li>Generate and maintain pytest + UI automation from AC</li>
+            <li>Understands fixtures, seeding, teardown to prevent flakiness</li>
+            <li>Keeps a traceability matrix (Story → tests)</li>
+          </ul>
+          <div class="code">Output: tests/ + stable test data strategy</div>
+        </article>
+
+        <article class="card block col-12">
+          <h4>CI Triage + Jira Update Agent</h4>
+          <ul>
+            <li>Monitors CI failures and categorizes them (bug vs flake vs env)</li>
+            <li>Posts actionable failure summaries back to the story</li>
+            <li>Transitions Jira statuses when PR is merged and CI is green</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="loop" class="card section">
+      <h3>3) The sprint loop (Plan → Build → Test → Close → Next)</h3>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-12">
+          <h4>Step 0 — Readiness Gate (before sprint start)</h4>
+          <ul>
+            <li>Story has testable Acceptance Criteria</li>
+            <li>Dependencies satisfied (e.g., Auth before Transfers)</li>
+            <li>Definition of Done is known (tests required, docs required, etc.)</li>
+          </ul>
+          <div class="callout"><strong>If not ready:</strong> Groomer agent updates ticket or the story is pushed out.</div>
+        </div>
+
+        <div class="card block col-12">
+          <h4>Step 1 — Sprint Planning (agent proposes, human approves)</h4>
+          <ul>
+            <li>Orchestrator selects candidate stories from Jira and drafts a sprint goal</li>
+            <li>Plan includes: scope, dependency order, risk notes, and “definition of done” reminders</li>
+          </ul>
+          <div class="code">Output: SPRINT_PLAN.md (reviewable artifact)</div>
+        </div>
+
+        <div class="card block col-12">
+          <h4>Step 2 — Execution (story-by-story PRs)</h4>
+          <ul>
+            <li>Developer agent implements a vertical slice (API + minimal UI if needed)</li>
+            <li>Test agent adds tests mapped to AC</li>
+            <li>CI runs; CI agent triages failures; iterate until green</li>
+            <li>Jira agent posts PR and CI links in the story</li>
+          </ul>
+          <div class="callout"><strong>Definition of done:</strong> no story is “Done” unless CI is green and AC is met.</div>
+        </div>
+
+        <div class="card block col-12">
+          <h4>Step 3 — Sprint Review & Close</h4>
+          <ul>
+            <li>Generate sprint report: shipped items, known issues, carryover, tech debt</li>
+            <li>Transition completed stories; identify blocked items</li>
+            <li>Close sprint (if using Jira sprint feature) or publish a summary ticket/comment</li>
+          </ul>
+        </div>
+
+        <div class="card block col-12">
+          <h4>Step 4 — Next sprint selection</h4>
+          <ul>
+            <li>Pick next stories based on backlog priority + next dependency chain</li>
+            <li>Include a small % capacity for stability (flake reduction, refactors, docs)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="guardrails" class="card section">
+      <h3>4) Guardrails (how to keep it safe and predictable)</h3>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6">
+          <h4>Permission model</h4>
+          <ul>
+            <li>Wide read access (read backlog, comments)</li>
+            <li>Narrow write access initially:
+              <ul>
+                <li>comment</li>
+                <li>transition only forward</li>
+                <li>create subtasks (optional)</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div class="card block col-6">
+          <h4>Engineering constraints</h4>
+          <ul>
+            <li>No direct pushes to main — PRs only</li>
+            <li>Require CI pass before “Done”</li>
+            <li>Prefer small PRs to reduce risk and review time</li>
+          </ul>
+        </div>
+        <div class="card block col-12">
+          <h4>Truth hierarchy</h4>
+          <div class="code">If Jira says "Done" but CI is red → it’s NOT done.
+If CI is green but AC is missing → it’s NOT done.
+If AC is met and CI is green → ship it; then update Jira.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="mvp" class="card section">
+      <h3>5) MVP rollout plan (start small)</h3>
+      <p>
+        The fastest path is to automate just enough to prove the loop works end-to-end.
+        Then add sophistication (parallelization, auto-sprint close, richer reconciliation).
+      </p>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-12">
+          <h4>Phase 0 — Assisted mode (recommended)</h4>
+          <ul>
+            <li>Orchestrator writes a sprint plan from Jira</li>
+            <li>Developer agent implements 1 story and opens a PR</li>
+            <li>Human approves merge; Jira agent transitions the story</li>
+          </ul>
+        </div>
+        <div class="card block col-12">
+          <h4>Phase 1 — Mostly automated</h4>
+          <ul>
+            <li>Auto-apply grooming template updates</li>
+            <li>Auto-generate tests from AC and keep CI green</li>
+            <li>Auto-transition Jira statuses based on PR/CI events</li>
+          </ul>
+        </div>
+        <div class="card block col-12">
+          <h4>Phase 2 — Continuous backlog execution</h4>
+          <ul>
+            <li>Agent picks next best story when capacity frees up</li>
+            <li>Automated reconciliation keeps Jira + repo aligned</li>
+            <li>Periodic sprint summary generated and posted</li>
+          </ul>
+        </div>
+      </div>
+
+      <hr />
+      <div class="footer">
+        <div class="footer-nav" aria-label="Doc navigation">
+          <a href="./index.html">Overview</a>
+          <a href="./sprint-orchestration.html" aria-current="page">Sprint loop</a>
+          <a href="./github-actions.html">GitHub Actions</a>
+        </div>
+        <div class="small">Tip: keep this page as the “operating manual”.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

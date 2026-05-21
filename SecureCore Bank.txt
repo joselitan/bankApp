@@ -1,0 +1,153 @@
+SOFTWARE REQUIREMENT SPECIFICATION (SRS)
+Project Name: SecureCore Bank
+Version: 1.0
+Date: May 21, 2026
+Prepared For: QA Engineering Training & Practice
+
+1. PROJECT OVERVIEW
+-------------------
+Goal: Build a functional, mid-complexity online banking application to serve as a test bed for manual and automated QA strategies.
+Complexity Level: Medium. Features include logic validation, state management, and security checks, but exclude real-money integration or legacy mainframe complexity.
+Target Audience: QA Engineers practicing test case design, Selenium/Playwright automation, API testing, and performance testing.
+
+2. TECH STACK REQUIREMENTS
+--------------------------
+Frontend:
+  - Language: JavaScript (ES6+)
+  - Styling: Professional CSS (Flexbox/Grid, responsive design, dark/light mode toggle)
+  - Automation Target: High visibility of 'data-testid' attributes for robust selectors
+Backend:
+  - Framework: Flask (Python)
+  - Testing Framework: pytest (with pytest-cov, pytest-flask)
+  - Database: SQLite (for simplicity) or PostgreSQL
+  - API Style: RESTful JSON
+QA Tools Target:
+  - Manual: TestRail/Zephyr style reporting
+  - Automation: Playwright or Selenium (Python/JS)
+
+3. FUNCTIONAL REQUIREMENTS
+--------------------------
+3.1. User Management & Authentication
+  FR-01 Registration: Users can register with email, password (min 8 chars, 1 number, 1 special char), and full_name.
+      QA Angle: Test password validation regex, duplicate email handling, and SQL injection attempts.
+  FR-02 Login/Logout: Secure session management (JWT or Session cookies).
+      QA Angle: Test brute-force protection (lockout after 3 failed attempts), session timeout, and "stay logged in" functionality.
+  FR-03 Role-Based Access Control (RBAC):
+      - Customer: Can view own data, transfer, deposit.
+      - Admin: Can view all users, freeze accounts, reset passwords (no direct money access).
+      QA Angle: Verify that a Customer cannot access Admin endpoints (HTTP 403).
+
+3.2. Account Management
+  FR-04 Account Creation: Users start with a "Savings" account (Balance: $0.00).
+  FR-05 Account Details: View current balance, account number, and recent transaction history (last 10 items).
+  FR-06 Account Freezing: Admins can freeze an account. A frozen account cannot initiate transfers.
+      QA Angle: Negative testing: Try to transfer money from a frozen account.
+
+3.3. Transaction Core
+  FR-07 Deposit: Users can deposit funds (real or simulated).
+      Rules: Minimum deposit $1.00. Max deposit $10,000 per transaction.
+      QA Angle: Boundary value analysis ($0.99, $1.00, $10,000.00, $10,000.01).
+  FR-08 Internal Transfer: Transfer between two users in the system.
+      Rules:
+        - Cannot transfer to self.
+        - Cannot transfer more than current balance.
+        - Minimum transfer $0.01.
+        - Daily transfer limit: $5,000 per user.
+      QA Angle: Race conditions (double spending), daily limit enforcement, negative balance prevention.
+  FR-09 External Transfer (Simulation): "Withdraw" money out of the system.
+      Rules: Requires 2FA simulation (enter a dummy code sent to email).
+      QA Angle: Verify 2FA flow, timeout of the code, and invalid code handling.
+
+3.4. Audit & Logging
+  FR-10 Transaction Log: Every action (login, deposit, transfer, login failure) is logged in a database table with timestamp, user_id, action, amount, and ip_address.
+      QA Angle: Verify data integrity in logs; ensure logs cannot be tampered with by the user.
+  FR-11 Admin Dashboard: Admins can view a table of all users and their transaction counts.
+
+4. NON-FUNCTIONAL REQUIREMENTS (NFRs)
+-------------------------------------
+4.1. Security
+  NFR-01 Password Hashing: All passwords must be hashed (e.g., bcrypt) before storage. Never store plain text.
+  NFR-02 Input Sanitization: All inputs must be sanitized to prevent XSS and SQL Injection.
+  NFR-03 HTTPS Simulation: The system should enforce secure headers (even if running locally, use flask-talisman to set headers).
+
+4.2. Performance
+  NFR-04 Load: The system must handle 50 concurrent users performing transfers without crashing.
+  NFR-05 Latency: API response time for transfers should be under 500ms.
+
+4.3. Reliability
+  NFR-06 Transaction Atomicity: If a transfer fails halfway (e.g., debit succeeds but credit fails), the entire transaction must roll back. No money should be "lost."
+
+5. UI/UX REQUIREMENTS (FRONTEND)
+--------------------------------
+UI-01 Dashboard: Clean layout showing:
+    - Welcome message.
+    - Card showing Current Balance (large font).
+    - "Quick Actions" buttons: Deposit, Transfer, History.
+UI-02 Forms:
+    - Floating labels or clear placeholders.
+    - Real-time validation (e.g., red border if email is invalid).
+    - Success/Error toast notifications (e.g., "Transfer Successful").
+UI-03 Responsiveness: Must work on Mobile (320px width) and Desktop (1920px).
+UI-04 Accessibility: All form inputs must have associated <label> tags or aria-label attributes.
+
+6. QA STRATEGY & TEST SCENARIOS GUIDE
+-------------------------------------
+6.1. Manual Testing Scenarios
+  1. Happy Path: Register -> Login -> Deposit $100 -> Transfer $50 to User B -> Check Balance.
+  2. Boundary Testing:
+     - Try to deposit $0.
+     - Try to transfer $0.00 (should fail).
+     - Try to transfer exactly the daily limit.
+     - Try to transfer $0.01 more than the daily limit.
+  3. Negative Testing:
+     - Login with wrong password 4 times.
+     - Transfer from a frozen account.
+     - Submit a transfer form with a negative amount.
+     - SQL Injection in the login form (' OR '1'='1').
+  4. UI/UX Testing:
+     - Resize browser to mobile size; check layout.
+     - Tab through forms; check focus management.
+     - Verify error messages are user-friendly, not technical.
+
+6.2. Automation Testing Strategy (Pytest + Flask + Playwright/Selenium)
+  Backend API Tests (Pytest):
+    - Use pytest with requests library.
+    - Fixture: Create a test database, seed users, and tear down after tests.
+    - Test Cases:
+      * test_deposit_success: Verify balance increments.
+      * test_transfer_insufficient_funds: Verify 400 status code.
+      * test_daily_limit_exceeded: Verify logic blocks 6th transfer.
+      * test_concurrent_transfer: Use threading to test race conditions.
+
+  Frontend UI Tests (Playwright/Selenium):
+    - Selector Strategy: Use data-testid (e.g., <button data-testid="btn-transfer">) instead of XPaths or CSS classes.
+    - Test Cases:
+      * test_login_flow: Verify redirect to dashboard on success and error message on failure.
+      * test_transfer_e2e: Fill form, submit, verify success toast, verify balance update in DOM.
+      * test_validation: Submit empty form, verify error messages appear.
+
+7. DELIVERABLES
+---------------
+1. Source Code:
+   - app.py (Flask routes)
+   - models.py (SQLAlchemy models)
+   - templates/ (HTML files with JS)
+   - static/ (CSS/JS)
+2. Test Suite:
+   - tests/test_api.py (Backend unit/integration tests)
+   - tests/test_ui.py (End-to-end UI tests)
+3. Test Documentation:
+   - A TEST_PLAN.md file listing the manual test cases (Pass/Fail criteria).
+   - A BUG_REPORT_TEMPLATE.md for documenting issues found during testing.
+4. CI/CD Pipeline (Optional but Recommended):
+   - A simple GitHub Actions workflow that runs pytest on every push.
+
+8. IMPLEMENTATION ROADMAP
+-------------------------
+Week 1: Backend Core - Set up Flask, DB models, and basic Auth API. Write API tests.
+Week 2: Transaction Logic - Implement Deposit/Transfer logic with validation. Write complex API tests (race conditions).
+Week 3: Frontend - Build the UI with professional CSS. Connect to API.
+Week 4: Automation - Write Playwright/Selenium scripts for the UI. Integrate into CI.
+Week 5: Chaos & Security - Try to break the system (SQLi, XSS, Race conditions) and fix bugs.
+
+END OF DOCUMENT
