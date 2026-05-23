@@ -1,6 +1,12 @@
 name: Sprint Orchestrator (Mode 1 - plan only)
 
 on:
+  push:
+    branches:
+      - option-a/sprint-orchestrator
+    paths:
+      - '.github/workflows/sprint-orchestrator.yml'
+      - 'tools/jira/**'
   workflow_dispatch:
     inputs:
       maxResults:
