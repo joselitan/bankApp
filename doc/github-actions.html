@@ -143,14 +143,17 @@ JIRA_API_TOKEN = (create at id.atlassian.com/manage-profile/security/api-tokens)
             <li>BAN backlog created (epics + stories) with strong Acceptance Criteria</li>
             <li>Documentation site created in <span class="badge">doc/</span> (overview + sprint loop)</li>
             <li>New epics created: <span class="badge">BAN-28</span> (Frontend UI/UX), <span class="badge">BAN-29</span> (QA/Automation)</li>
+            <li>GitHub Actions Jira secrets verified (<span class="badge">Verify Jira Secrets</span> workflow)</li>
+            <li>Mode 1 Sprint Orchestrator implemented (plan-only, no Jira writes) on branch <span class="badge">option-a/sprint-orchestrator</span></li>
           </ul>
         </div>
         <div class="card block col-6">
           <h4>Next up (recommended order)</h4>
           <ul>
-            <li>Create/push the project to a GitHub repository</li>
-            <li>Add the Jira secrets in GitHub Actions</li>
-            <li>Implement Mode 1 workflow (generate sprint plan from Jira)</li>
+            <li>Run <span class="badge">Sprint Orchestrator (Mode 1 - plan only)</span> on the <span class="badge">option-a/sprint-orchestrator</span> branch</li>
+            <li>Download and review the artifact <span class="badge">sprint-plan</span> (contains <span class="badge">SPRINT_PLAN.md</span> + <span class="badge">issues.json</span>)</li>
+            <li>Tune <span class="badge">tools/jira/jql.txt</span> (scope rules) until the plan matches your sprint selection process</li>
+            <li>Open a PR from <span class="badge">option-a/sprint-orchestrator</span> → <span class="badge">main</span> and merge when you’re happy</li>
             <li>Later: enable Mode 2 (comments/status transitions)</li>
             <li>Later: enable Mode 3 (auto-PR creation per story)</li>
           </ul>
