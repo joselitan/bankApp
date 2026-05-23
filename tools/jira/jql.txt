@@ -1,4 +1,5 @@
 project = BAN
 AND issuetype in (Story, Bug, Task)
 AND status = "To Do"
+AND labels = ready-for-sprint
 ORDER BY Rank ASC
