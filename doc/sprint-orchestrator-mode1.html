@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sprint Orchestrator (Mode 1) — Jira → Sprint Plan</title>
+  <meta name="description" content="Detailed description of the Mode 1 Sprint Orchestrator workflow: how it queries Jira via JQL, generates SPRINT_PLAN.md, and publishes artifacts via GitHub Actions." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Sprint Orchestrator (Mode 1)</h1>
+          <p>Plan-only: read Jira → generate <span class="badge">SPRINT_PLAN.md</span> (no Jira writes)</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Page navigation">
+        <a href="./index.html">← Overview</a>
+        <a href="./github-actions.html">GitHub Actions</a>
+        <a href="#what">What it does</a>
+        <a href="#files">Files</a>
+        <a href="#flow">Flow</a>
+        <a href="#tuning">Tuning scope</a>
+        <a href="#safety">Safety</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="card">
+        <div class="kicker">Outcome</div>
+        <h2>Generate a sprint plan automatically from Jira, with a reviewable artifact</h2>
+        <p class="lead">
+          Mode 1 is intentionally conservative: it only <strong>reads</strong> from Jira and produces a sprint plan
+          file. No transitions, no comments, no issue edits.
+        </p>
+        <div class="meta">
+          <span class="pill"><span class="badge brand">Input</span> JQL + Jira secrets</span>
+          <span class="pill"><span class="badge ok">Output</span> SPRINT_PLAN.md artifact</span>
+          <span class="pill"><span class="badge warn">Guarantee</span> No Jira writes</span>
+        </div>
+      </div>
+      <aside class="card" style="padding:18px 18px;">
+        <div class="kicker">Why this matters</div>
+        <div class="callout" style="margin-top:10px;">
+          This gives you a repeatable way to slice work into sprints using the same rules every time.
+          You can review the plan before acting.
+        </div>
+      </aside>
+    </section>
+
+    <section id="what" class="card section">
+      <h3>1) What Mode 1 does</h3>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6" style="background: rgba(255,255,255,.03);">
+          <h4>Reads from Jira</h4>
+          <ul>
+            <li>Runs a JQL query (your backlog scope rules)</li>
+            <li>Fetches issue fields needed for planning</li>
+            <li>Normalizes into a clean JSON format</li>
+          </ul>
+          <div class="code">Output: tools/jira/issues.json</div>
+        </div>
+        <div class="card block col-6" style="background: rgba(255,255,255,.03);">
+          <h4>Generates a sprint plan</h4>
+          <ul>
+            <li>Builds a markdown table of candidate issues</li>
+            <li>Includes trimmed details per issue for quick review</li>
+            <li>Uploads the plan as a GitHub Actions artifact</li>
+          </ul>
+          <div class="code">Output: SPRINT_PLAN.md</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:12px;">
+        <strong>Mode 1 constraint:</strong> no Jira writes. That’s why it’s safe as the first automation step.
+      </div>
+    </section>
+
+    <section id="files" class="card section">
+      <h3>2) Files added for Mode 1</h3>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-12">
+          <h4>Workflow</h4>
+          <div class="code">.github/workflows/sprint-orchestrator.yml</div>
+          <ul>
+            <li>Manual trigger via <span class="badge">workflow_dispatch</span> with input <span class="badge">maxResults</span></li>
+            <li>Optional schedule (weekly) for consistent planning cadence</li>
+            <li>Uploads artifacts: plan + issues.json + jql</li>
+          </ul>
+        </div>
+
+        <div class="card block col-12">
+          <h4>Jira scripts</h4>
+          <div class="code">tools/jira/fetch_issues.py
+tools/jira/generate_sprint_plan.py
+tools/jira/jql.txt</div>
+          <ul>
+            <li><strong>fetch_issues.py</strong>: calls Jira REST API search endpoint with JQL and writes normalized JSON</li>
+            <li><strong>generate_sprint_plan.py</strong>: reads normalized JSON and renders <span class="badge">SPRINT_PLAN.md</span></li>
+            <li><strong>jql.txt</strong>: your scope rules — edit this to control what enters the plan</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="flow" class="card section">
+      <h3>3) End-to-end flow (what happens when you run it)</h3>
+      <div class="code">1) GitHub Actions starts
+2) Workflow checks out the repo
+3) Workflow sets up Python 3.11
+4) fetch_issues.py runs:
+   - reads tools/jira/jql.txt
+   - calls Jira /rest/api/3/search
+   - writes tools/jira/issues.json
+5) generate_sprint_plan.py runs:
+   - reads tools/jira/issues.json
+   - writes SPRINT_PLAN.md
+6) Workflow uploads artifacts for download</div>
+
+      <div class="callout" style="margin-top:12px;">
+        The plan is meant to be reviewed by a human before starting a sprint, moving statuses, or assigning work.
+      </div>
+    </section>
+
+    <section id="tuning" class="card section">
+      <h3>4) Tuning sprint scope (Option A)</h3>
+      <p>
+        Option A uses JQL based on status and rank. Your current default lives in <span class="badge">tools/jira/jql.txt</span>.
+      </p>
+
+      <div class="card block" style="background: rgba(255,255,255,.03);">
+        <h4>Default JQL</h4>
+        <div class="code">project = BAN
+AND issuetype in (Story, Bug, Task)
+AND status = "To Do"
+ORDER BY Rank ASC</div>
+      </div>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6">
+          <h4>Common tweaks</h4>
+          <ul>
+            <li>Add label gates: <span class="badge">AND labels = ready-for-sprint</span></li>
+            <li>Exclude epics explicitly (already excluded by issue type list)</li>
+            <li>Limit to a component or sprint theme</li>
+          </ul>
+        </div>
+        <div class="card block col-6">
+          <h4>About status naming</h4>
+          <ul>
+            <li>JQL status names must match your Jira workflow status names</li>
+            <li>“Backlog” in the UI is often a board bucket, not a real status</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="safety" class="card section">
+      <h3>5) Safety / rollback model</h3>
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6">
+          <h4>Why this is safe</h4>
+          <ul>
+            <li>Read-only access to Jira</li>
+            <li>No state changes in Jira, ever (Mode 1)</li>
+            <li>Artifacts are reviewable and auditable</li>
+          </ul>
+        </div>
+        <div class="card block col-6">
+          <h4>How we can evolve it later</h4>
+          <ul>
+            <li>Mode 2: add comments + optional transitions (guardrailed)</li>
+            <li>Mode 3: generate PRs per story</li>
+          </ul>
+        </div>
+      </div>
+
+      <hr />
+      <div class="footer">
+        <div class="footer-nav" aria-label="Doc navigation">
+          <a href="./index.html">Overview</a>
+          <a href="./sprint-orchestration.html">Sprint loop</a>
+          <a href="./github-actions.html">GitHub Actions</a>
+          <a href="./sprint-orchestrator-mode1.html" aria-current="page">Sprint Orchestrator (Mode 1)</a>
+        </div>
+        <div class="small">Mode 1 is the “trust-building” step: always safe, always reviewable.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
