@@ -13,6 +13,9 @@ on:
         description: 'Maximum number of issues to pull from Jira'
         required: false
         default: '25'
+  # We keep the schedule, but the job below only performs full Jira calls when
+  # invoked via workflow_dispatch or schedule. Push is used only to force
+  # workflow discovery and syntax validation.
   schedule:
     # Optional: weekly plan generation. Adjust/remove as desired.
     - cron: '0 8 * * 1'
@@ -33,7 +36,14 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Smoke check (push events only)
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          python -m py_compile tools/jira/fetch_issues.py tools/jira/generate_sprint_plan.py
+          test -f tools/jira/jql.txt
+
       - name: Fetch candidate issues from Jira (JQL)
+        if: ${{ github.event_name != 'push' }}
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
@@ -45,12 +55,14 @@ jobs:
             --out tools/jira/issues.json
 
       - name: Generate SPRINT_PLAN.md
+        if: ${{ github.event_name != 'push' }}
         run: |
           python tools/jira/generate_sprint_plan.py \
             --in tools/jira/issues.json \
             --out SPRINT_PLAN.md
 
       - name: Upload sprint plan artifact
+        if: ${{ github.event_name != 'push' }}
         uses: actions/upload-artifact@v4
         with:
           name: sprint-plan
