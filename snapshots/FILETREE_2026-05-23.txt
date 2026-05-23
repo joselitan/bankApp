@@ -1,0 +1,8 @@
+./.github/workflows/verify-jira.yml
+./.gitignore
+./SecureCore Bank.txt
+./doc/github-actions.html
+./doc/index.html
+./doc/sprint-orchestration.html
+./doc/styles.css
+./tools/jira/verify_connection.py

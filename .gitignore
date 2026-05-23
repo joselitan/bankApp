@@ -1,5 +1,6 @@
 # macOS
 .DS_Store
+**/.DS_Store
 
 # Python
 __pycache__/
@@ -16,3 +17,7 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Agent snapshots (keep tracked; ignore any generated temp files inside)
+snapshots/*.tmp
+snapshots/*.log
