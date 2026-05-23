@@ -1,0 +1,54 @@
+name: Sprint Orchestrator (Mode 1 - plan only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      maxResults:
+        description: 'Maximum number of issues to pull from Jira'
+        required: false
+        default: '25'
+  schedule:
+    # Optional: weekly plan generation. Adjust/remove as desired.
+    - cron: '0 8 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch candidate issues from Jira (JQL)
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          python tools/jira/fetch_issues.py \
+            --jql-file tools/jira/jql.txt \
+            --max-results "${{ github.event.inputs.maxResults || '25' }}" \
+            --out tools/jira/issues.json
+
+      - name: Generate SPRINT_PLAN.md
+        run: |
+          python tools/jira/generate_sprint_plan.py \
+            --in tools/jira/issues.json \
+            --out SPRINT_PLAN.md
+
+      - name: Upload sprint plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprint-plan
+          path: |
+            SPRINT_PLAN.md
+            tools/jira/issues.json
+            tools/jira/jql.txt

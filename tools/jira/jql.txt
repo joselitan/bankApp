@@ -1,0 +1,4 @@
+project = BAN
+AND issuetype in (Story, Bug, Task)
+AND status = "To Do"
+ORDER BY Rank ASC
