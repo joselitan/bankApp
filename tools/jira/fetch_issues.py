@@ -28,7 +28,6 @@ import json
 import os
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
 
 
@@ -63,52 +62,60 @@ def _jira_search(
     jql: str,
     max_results: int,
 ) -> dict:
-    params = {
+    """Call Jira's supported JQL search endpoint.
+
+    Atlassian has removed the older /rest/api/3/search endpoint in some tenants.
+    This uses POST /rest/api/3/search/jql.
+    """
+
+    url = f"{base_url}/rest/api/3/search/jql"
+
+    payload = {
         "jql": jql,
-        "maxResults": str(max_results),
-        "fields": ",".join(
-            [
-                "summary",
-                "issuetype",
-                "status",
-                "priority",
-                "assignee",
-                "reporter",
-                "labels",
-                "components",
-                "fixVersions",
-                "created",
-                "updated",
-                "description",
-            ]
-        ),
-        "expand": "renderedFields",
+        "maxResults": int(max_results),
+        "fields": [
+            "summary",
+            "issuetype",
+            "status",
+            "priority",
+            "assignee",
+            "reporter",
+            "labels",
+            "components",
+            "fixVersions",
+            "created",
+            "updated",
+            "description",
+        ],
+        "expand": ["renderedFields"],
     }
 
-    url = f"{base_url}/rest/api/3/search?{urllib.parse.urlencode(params)}"
+    data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url,
+        data=data,
         headers={
             "Authorization": f"Basic {_basic_auth(email, token)}",
             "Accept": "application/json",
+            "Content-Type": "application/json",
             "User-Agent": "bankapp-sprint-orchestrator/1.0",
         },
-        method="GET",
+        method="POST",
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=45) as resp:
             body = resp.read().decode("utf-8")
             return json.loads(body)
     except urllib.error.HTTPError as e:
-        payload = ""
+        payload_txt = ""
         try:
-            payload = e.read().decode("utf-8", errors="replace")
+            payload_txt = e.read().decode("utf-8", errors="replace")
         except Exception:
-            payload = ""
+            payload_txt = ""
         _eprint(f"Jira search failed: HTTP {e.code} {e.reason}")
-        if payload:
-            _eprint(payload)
+        if payload_txt:
+            _eprint(payload_txt)
         raise SystemExit(3)
     except Exception as e:
         _eprint(f"Jira search failed: {e.__class__.__name__}: {e}")
