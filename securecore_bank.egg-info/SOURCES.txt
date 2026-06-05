@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+app/__init__.py
+app/main.py
+securecore_bank.egg-info/PKG-INFO
+securecore_bank.egg-info/SOURCES.txt
+securecore_bank.egg-info/dependency_links.txt
+securecore_bank.egg-info/requires.txt
+securecore_bank.egg-info/top_level.txt
+tests/test_accounts_me.py
+tests/test_audit_logging.py
+tests/test_auth_login.py
+tests/test_auth_register.py
+tests/test_deposit.py
+tests/test_health.py
+tests/test_transfer.py

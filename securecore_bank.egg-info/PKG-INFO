@@ -1,0 +1,59 @@
+Metadata-Version: 2.4
+Name: securecore-bank
+Version: 0.1.0
+Summary: SecureCore Bank MVP (API-first)
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi>=0.111.0
+Requires-Dist: uvicorn[standard]>=0.30.0
+Requires-Dist: sqlalchemy>=2.0.30
+Requires-Dist: pydantic>=2.7.0
+Requires-Dist: email-validator>=2.1.0
+Requires-Dist: pydantic-settings>=2.3.0
+Requires-Dist: python-multipart>=0.0.9
+Requires-Dist: passlib[bcrypt]>=1.7.4
+Requires-Dist: python-jose[cryptography]>=3.3.0
+Requires-Dist: certifi>=2024.2.2
+Provides-Extra: dev
+Requires-Dist: pytest>=8.2.0; extra == "dev"
+Requires-Dist: httpx>=0.27.0; extra == "dev"
+Requires-Dist: pytest-cov>=5.0.0; extra == "dev"
+Requires-Dist: ruff>=0.5.0; extra == "dev"
+
+# SecureCore Bank — MVP (FastAPI)
+
+This repo contains:
+- Jira planning automation under `tools/jira/`
+- Sprint documentation under `doc/`
+- An API-first MVP backend under `app/`
+
+## Backend: local dev
+
+Create a virtual environment and install dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -e '.[dev]'
+```
+
+Run the API:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Then open:
+- Swagger UI: http://127.0.0.1:8000/docs
+
+## Tests
+
+```bash
+pytest
+```
+
+## Notes
+
+- Database: SQLite (file `securecore_bank.db` by default)
+- Config via environment variables (see `app/core/config.py`)
