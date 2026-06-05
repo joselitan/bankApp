@@ -215,10 +215,19 @@ def create_and_fill_sprint(cfg: CreateSprintConfig) -> int:
 
     existing = find_sprint_by_name(cfg.board_id, cfg.sprint_name)
     if existing:
-        raise SystemExit(
-            f"Sprint named '{cfg.sprint_name}' already exists on board {cfg.board_id} (id={existing.get('id')}). "
-            "Choose a new name."
+        sprint_id = int(existing.get("id"))
+        print(
+            f"Sprint already exists: '{cfg.sprint_name}' (id={sprint_id}, state={existing.get('state')}). "
+            "Will add selected issues to this sprint."
         )
+
+        if cfg.dry_run:
+            print(f"DRY-RUN: would add {len(keys)} issue(s) to existing sprint {sprint_id}")
+            return 0
+
+        add_issues_to_sprint(sprint_id, keys)
+        print(f"OK: added {len(keys)} issue(s) to existing sprint {sprint_id}")
+        return 0
 
     if cfg.dry_run:
         print(f"DRY-RUN: would create sprint '{cfg.sprint_name}' on board {cfg.board_id}")
