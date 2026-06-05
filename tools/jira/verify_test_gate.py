@@ -45,7 +45,14 @@ from tools.jira.env import load_dotenv  # noqa: E402
 
 load_dotenv()
 
-REVIEWER_RE = re.compile(r"^Reviewer sign-off \(fill when verified\):\s*(.+)$", re.MULTILINE)
+# Evidence files evolved a bit over time. Support both:
+# - "Reviewer sign-off (fill when verified): <name/date>" (original convention)
+# - "Reviewer sign-off: <name>" (current recommended)
+# - "Reviewer: <name>" (legacy)
+REVIEWER_RE = re.compile(
+    r"^\s*-?\s*(Reviewer sign-off(?: \(fill when verified\))?|Reviewer):\s*(.+)$",
+    re.MULTILINE,
+)
 
 
 def _ssl_context() -> ssl.SSLContext:
@@ -103,7 +110,7 @@ def evidence_has_signoff(text: str) -> bool:
     m = REVIEWER_RE.search(text)
     if not m:
         return False
-    value = (m.group(1) or "").strip()
+    value = (m.group(2) or "").strip()
     return bool(value and value != "<name/date>")
 
 
