@@ -31,7 +31,6 @@ import sys
 import urllib.error
 import urllib.request
 
-
 REQUIRED = ("JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN")
 LABEL = "ready-for-sprint"
 

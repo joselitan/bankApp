@@ -10,7 +10,9 @@ Env vars:
 - JIRA_API_TOKEN (required)
 
 Usage:
-- python3 tools/jira/jira_search_jql.py --jql-file tools/jira/jql.txt --out tools/jira/raw_search.json
+- python3 tools/jira/jira_search_jql.py \
+    --jql-file tools/jira/jql.txt \
+    --out tools/jira/raw_search.json
 
 Exit codes:
 - 0 success
@@ -28,7 +30,6 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-
 
 REQUIRED = ("JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN")
 

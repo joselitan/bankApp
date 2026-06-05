@@ -26,10 +26,12 @@ import argparse
 import base64
 import json
 import os
+import ssl
 import sys
 import urllib.error
 import urllib.request
 
+import certifi
 
 REQUIRED = ("JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN")
 
@@ -70,24 +72,14 @@ def _jira_search(
 
     url = f"{base_url}/rest/api/3/search/jql"
 
+    # NOTE: Jira Cloud's new endpoint (POST /rest/api/3/search/jql) differs from the classic
+    # search API: it returns a page token and *does not* return full issue objects by default.
+    # Requesting classic 'fields' / 'expand' can produce HTTP 400 on some tenants.
+    #
+    # For planning purposes, we only need issue ids/keys, and can enrich later if needed.
     payload = {
         "jql": jql,
         "maxResults": int(max_results),
-        "fields": [
-            "summary",
-            "issuetype",
-            "status",
-            "priority",
-            "assignee",
-            "reporter",
-            "labels",
-            "components",
-            "fixVersions",
-            "created",
-            "updated",
-            "description",
-        ],
-        "expand": ["renderedFields"],
     }
 
     data = json.dumps(payload).encode("utf-8")
@@ -103,8 +95,10 @@ def _jira_search(
         method="POST",
     )
 
+    ctx = ssl.create_default_context(cafile=certifi.where())
+
     try:
-        with urllib.request.urlopen(req, timeout=45) as resp:
+        with urllib.request.urlopen(req, timeout=45, context=ctx) as resp:
             body = resp.read().decode("utf-8")
             return json.loads(body)
     except urllib.error.HTTPError as e:
@@ -180,12 +174,21 @@ def main() -> int:
     )
 
     raw_issues = data.get("issues") or []
-    normalized = [_normalize_issue(i, base_url) for i in raw_issues]
+    # New endpoint may return minimal issues (e.g., {"id": "10390"}). Keep as-is.
+    normalized = []
+    for i in raw_issues:
+        if isinstance(i, dict) and i.get("key"):
+            normalized.append(_normalize_issue(i, base_url))
+        else:
+            normalized.append(i)
 
     out_payload = {
         "jql": jql,
         "max_results": args.max_results,
+        # New endpoint returns paging via nextPageToken/isLast.
         "total": data.get("total"),
+        "nextPageToken": data.get("nextPageToken"),
+        "isLast": data.get("isLast"),
         "issues": normalized,
     }
 

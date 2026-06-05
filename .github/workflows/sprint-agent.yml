@@ -1,0 +1,83 @@
+name: Sprint Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "What to do: plan | create | close-and-rollover"
+        required: true
+        default: "plan"
+      boardId:
+        description: "Jira board id (e.g., 34)"
+        required: true
+        default: "34"
+      sprintName:
+        description: "Sprint name (used for operation=create)"
+        required: false
+        default: "Sprint 2"
+      closeSprintId:
+        description: "Sprint id to close (used for operation=close-and-rollover)"
+        required: false
+      nextSprintName:
+        description: "Next sprint name (used for operation=close-and-rollover)"
+        required: false
+        default: "Sprint 2"
+      featuresJql:
+        description: "JQL for feature selection"
+        required: false
+        default: "project = BAN AND labels = ready-for-sprint AND issuetype in (Story, Task) AND statusCategory != Done ORDER BY priority DESC, created ASC"
+      bugsJql:
+        description: "JQL for regression bug selection"
+        required: false
+        default: "project = BAN AND issuetype = Bug AND labels = regression AND statusCategory != Done ORDER BY priority DESC, created ASC"
+      maxIssues:
+        description: "Max issues to include"
+        required: false
+        default: "25"
+      dryRun:
+        description: "If true, do not create sprint or modify Jira"
+        required: false
+        default: "true"
+      autoRemoveReadyLabelOnDone:
+        description: "Attempt to remove ready-for-sprint label from issues (helps prevent re-selection)"
+        required: false
+        default: "true"
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package (minimal)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Run Sprint Agent
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          python tools/jira/sprint_agent.py \
+            "${{ inputs.operation }}" \
+            --board-id "${{ inputs.boardId }}" \
+            --max-issues "${{ inputs.maxIssues }}" \
+            --features-jql "${{ inputs.featuresJql }}" \
+            --bugs-jql "${{ inputs.bugsJql }}" \
+            ${{ inputs.operation == 'create' && format('--sprint-name "{0}"', inputs.sprintName) || '' }} \
+            ${{ inputs.operation == 'close-and-rollover' && format('--close-sprint-id {0}', inputs.closeSprintId) || '' }} \
+            ${{ inputs.operation == 'close-and-rollover' && format('--next-sprint-name "{0}"', inputs.nextSprintName) || '' }} \
+            ${{ inputs.dryRun == 'true' && '--dry-run' || '' }} \
+            ${{ inputs.autoRemoveReadyLabelOnDone == 'true' && '--auto-remove-ready-label-on-done' || '' }}

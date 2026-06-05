@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sprint Agent — How To (Manual Trigger) — SecureCore Bank</title>
+  <meta name="description" content="How to run the Sprint Agent manually, close a sprint, rollover to the next sprint, and include regression bugs." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Sprint Agent — How To</h1>
+          <p>Manual trigger workflow (recommended)</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Site navigation">
+        <a href="./index.html">Home</a>
+        <a href="./sprint-orchestration.html">Sprint orchestration</a>
+        <a href="./github-actions.html">GitHub Actions</a>
+        <a href="./sprint-orchestrator-mode1.html">Mode 1</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card section">
+      <h3>What this agent automates</h3>
+      <ul>
+        <li><strong>Plans</strong> sprint candidates using two JQL streams: features + regression bugs</li>
+        <li><strong>Creates</strong> a new sprint on your BAN board (board id 34)</li>
+        <li><strong>Adds</strong> selected issues to the sprint (deduplicated + capped)</li>
+        <li><strong>Closes an active sprint</strong> and rolls over to the next sprint (manual trigger)</li>
+      </ul>
+
+      <div class="callout" style="margin-top:12px;">
+        <strong>Safety defaults:</strong> the workflow runs in <code>dryRun=true</code> mode by default.
+        Always run <em>Plan</em> first, review the issue list, then re-run with <code>dryRun=false</code>.
+      </div>
+    </section>
+
+    <section class="card section">
+      <h3>How selection works (features + regression bugs)</h3>
+      <p>
+        The agent uses separate JQL queries so you can control what’s considered “suitable” work.
+        The default workflow inputs are:
+      </p>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6">
+          <h4>Features JQL</h4>
+          <div class="code">project = BAN AND labels = ready-for-sprint AND issuetype in (Story, Task) AND statusCategory != Done ORDER BY priority DESC, created ASC</div>
+          <p class="small">Use <code>ready-for-sprint</code> to explicitly opt items into planning.</p>
+        </div>
+        <div class="card block col-6">
+          <h4>Regression Bugs JQL</h4>
+          <div class="code">project = BAN AND issuetype = Bug AND labels = regression AND statusCategory != Done ORDER BY priority DESC, created ASC</div>
+          <p class="small">Regression bugs are included automatically if they have the <code>regression</code> label.</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:12px;">
+        <strong>Important:</strong> Done items are excluded by <code>statusCategory != Done</code>.
+        That means even if a Done issue still has <code>ready-for-sprint</code>, it won’t be selected again.
+        As additional hygiene, we also remove <code>ready-for-sprint</code> when marking issues Done.
+      </div>
+    </section>
+
+    <section class="card section">
+      <h3>Manual run (GitHub Actions)</h3>
+      <ol>
+        <li>Go to GitHub → <strong>Actions</strong> → <strong>Sprint Agent</strong> → <strong>Run workflow</strong></li>
+        <li>Pick an <strong>operation</strong> and fill inputs</li>
+      </ol>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="card block col-6">
+          <h4>Operation: <code>plan</code> (recommended first)</h4>
+          <ul>
+            <li>dryRun: true</li>
+            <li>Review the JSON output in the workflow logs (selected issues)</li>
+          </ul>
+        </div>
+        <div class="card block col-6">
+          <h4>Operation: <code>create</code></h4>
+          <ul>
+            <li>Set <strong>sprintName</strong> (e.g., Sprint 2)</li>
+            <li>Set dryRun: false</li>
+            <li>Agent creates the sprint and adds selected issues</li>
+          </ul>
+        </div>
+        <div class="card block col-12">
+          <h4>Operation: <code>close-and-rollover</code></h4>
+          <ul>
+            <li>Provide <strong>closeSprintId</strong> (must be an <em>active</em> sprint)</li>
+            <li>Provide <strong>nextSprintName</strong> (e.g., Sprint 3)</li>
+            <li>Set dryRun: false</li>
+            <li>Agent closes the active sprint, creates the next sprint, and fills it</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h3>API regression bugs: auto-create in Jira (separate agent)</h3>
+      <p>
+        Regression bugs should be created automatically from test failures.
+        We implement this as a separate agent: <code>tools/jira/regression_bug_agent.py</code>.
+      </p>
+      <p class="small">
+        It reads pytest <strong>JUnit XML</strong> output, builds a fingerprint, searches Jira for an existing bug with that fingerprint,
+        and creates a new Bug if needed (de-duplication).
+      </p>
+
+      <p class="small">
+        Auto-filed bugs are labeled <code>regression</code> and <code>pytest-regression</code> so you can filter them easily.
+      </p>
+
+      <div class="callout">
+        <strong>CI wiring:</strong> the repo includes two workflows:
+        <ul>
+          <li><code>API Regression (pytest)</code> → runs scheduled or manually and uploads <code>test-results/pytest-junit.xml</code></li>
+          <li><code>Regression Bug Agent</code> → triggers automatically if the regression run fails and files Jira bugs</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div>
+          <strong>SecureCore Bank</strong>
+          <span class="small">— Sprint Agent how-to</span>
+        </div>
+        <div class="small">Generated/maintained in repo under <code>doc/</code></div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

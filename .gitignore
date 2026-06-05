@@ -13,10 +13,20 @@ __pycache__/
 .venv/
 venv/
 
+# Local databases
+*.db
+
+# Local secrets (never commit)
+.env
+.env.*
+
 # Test/coverage artifacts
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Editor config
+.vscode/
 
 # Agent snapshots (keep tracked; ignore any generated temp files inside)
 snapshots/*.tmp

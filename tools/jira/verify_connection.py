@@ -23,10 +23,12 @@ from __future__ import annotations
 import base64
 import json
 import os
+import ssl
 import sys
 import urllib.error
 import urllib.request
 
+import certifi
 
 REQUIRED = ("JIRA_BASE_URL", "JIRA_EMAIL", "JIRA_API_TOKEN")
 
@@ -51,6 +53,8 @@ def require_env() -> dict[str, str]:
 def jira_myself(base_url: str, email: str, token: str) -> dict:
     auth = base64.b64encode(f"{email}:{token}".encode("utf-8")).decode("ascii")
 
+    ctx = ssl.create_default_context(cafile=certifi.where())
+
     req = urllib.request.Request(
         f"{base_url}/rest/api/3/myself",
         headers={
@@ -62,7 +66,7 @@ def jira_myself(base_url: str, email: str, token: str) -> dict:
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=20) as resp:
+        with urllib.request.urlopen(req, timeout=20, context=ctx) as resp:
             body = resp.read().decode("utf-8")
             return json.loads(body)
     except urllib.error.HTTPError as e:

@@ -1,0 +1,48 @@
+name: Regression Bug Agent (from pytest failures)
+
+on:
+  workflow_run:
+    workflows: ["API Regression (pytest)"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  file-bugs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Download regression artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: api-regression-results
+          run-id: ${{ github.event.workflow_run.id }}
+          path: downloaded-results
+
+      - name: File Jira bugs for pytest failures
+        # Only run when the regression workflow failed
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: BAN
+        run: |
+          python tools/jira/regression_bug_agent.py \
+            --junit-xml downloaded-results/test-results/pytest-junit.xml \
+            --run-url "${{ github.event.workflow_run.html_url }}"
