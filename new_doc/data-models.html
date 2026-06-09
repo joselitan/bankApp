@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Models — SecureCore Bank Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-hdr">
+        <div class="breadcrumb">Reference</div>
+        <h1>Data Models</h1>
+        <p class="lead">Entity–Relationship diagram and detailed column reference for all four database tables.</p>
+      </div>
+
+      <h2>Entity–Relationship Diagram</h2>
+      <p>The database consists of four tables. One user owns one account (MVP assumption), one account holds many transactions, and users generate many audit log entries.</p>
+
+      <div class="diagram-box">
+        <div class="mermaid">
+erDiagram
+    USERS {
+        int id PK
+        string email UK
+        string full_name
+        string password_hash
+        int failed_login_attempts
+        datetime locked_until
+        datetime created_at
+    }
+    ACCOUNTS {
+        int id PK
+        int user_id FK
+        string account_number UK
+        string name
+        decimal balance
+        datetime created_at
+    }
+    TRANSACTIONS {
+        int id PK
+        int account_id FK
+        string type
+        decimal amount
+        string description
+        datetime created_at
+    }
+    AUDIT_LOGS {
+        int id PK
+        int user_id FK
+        string action
+        decimal amount
+        string ip_address
+        string details
+        datetime timestamp
+    }
+
+    USERS ||--o{ ACCOUNTS     : "owns"
+    ACCOUNTS ||--o{ TRANSACTIONS : "records"
+    USERS ||--o{ AUDIT_LOGS   : "generates"
+        </div>
+      </div>
+      <p class="diagram-caption">Figure 1 — Entity–Relationship Diagram (SecureCore Bank, Sprint 1)</p>
+
+      <!-- ─────────────────── USERS ─────────────────── -->
+      <h2>Table: <code>users</code></h2>
+      <p>Stores all registered users. Tracks authentication state including failed login attempts and lockout timestamp.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>INTEGER</td><td>PK, auto-increment</td><td>Unique user identifier</td></tr>
+            <tr><td><code>email</code></td><td>VARCHAR(255)</td><td>UNIQUE, NOT NULL, indexed</td><td>Normalised to lowercase. Used as the login identifier.</td></tr>
+            <tr><td><code>full_name</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>Display name for the user</td></tr>
+            <tr><td><code>password_hash</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>PBKDF2-SHA256 hash of the password (via passlib)</td></tr>
+            <tr><td><code>failed_login_attempts</code></td><td>INTEGER</td><td>NOT NULL, default 0</td><td>Counter incremented on each bad-password attempt. Reset to 0 on successful login.</td></tr>
+            <tr><td><code>locked_until</code></td><td>DATETIME</td><td>nullable</td><td>Naive UTC datetime. If set and in the future, login is blocked with HTTP 423.</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME(tz)</td><td>NOT NULL</td><td>UTC timestamp of user creation.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ─────────────────── ACCOUNTS ─────────────────── -->
+      <h2>Table: <code>accounts</code></h2>
+      <p>Each user has exactly one Savings account in the MVP. The account is created atomically during user registration.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>INTEGER</td><td>PK, auto-increment</td><td>Unique account identifier</td></tr>
+            <tr><td><code>user_id</code></td><td>INTEGER</td><td>FK → users.id, indexed, NOT NULL</td><td>Owner of the account. Cascade delete enabled.</td></tr>
+            <tr><td><code>account_number</code></td><td>VARCHAR(32)</td><td>UNIQUE, indexed, NOT NULL</td><td>16-character random hex string generated with <code>secrets.token_hex(8)</code></td></tr>
+            <tr><td><code>name</code></td><td>VARCHAR(32)</td><td>NOT NULL, default "Savings"</td><td>Account label. Always "Savings" in Sprint 1.</td></tr>
+            <tr><td><code>balance</code></td><td>NUMERIC(18,2)</td><td>NOT NULL, default 0.00</td><td>Current balance. Stored as fixed-precision decimal to avoid floating-point errors.</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME(tz)</td><td>NOT NULL</td><td>UTC timestamp of account creation.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ─────────────────── TRANSACTIONS ─────────────────── -->
+      <h2>Table: <code>transactions</code></h2>
+      <p>Immutable ledger entries. Each deposit or transfer creates one (deposit) or two (transfer) records.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>INTEGER</td><td>PK, auto-increment</td><td>Unique transaction identifier</td></tr>
+            <tr><td><code>account_id</code></td><td>INTEGER</td><td>FK → accounts.id, indexed, NOT NULL</td><td>The account this transaction belongs to. Cascade delete enabled.</td></tr>
+            <tr><td><code>type</code></td><td>VARCHAR(32)</td><td>NOT NULL</td><td>One of: <code>deposit</code>, <code>transfer_in</code>, <code>transfer_out</code></td></tr>
+            <tr><td><code>amount</code></td><td>NUMERIC(18,2)</td><td>NOT NULL</td><td>Always stored as a positive value. Direction is implied by <code>type</code>.</td></tr>
+            <tr><td><code>description</code></td><td>VARCHAR(255)</td><td>nullable</td><td>Human-readable note. Transfer records include counterparty email (e.g. <code>to=bob@example.com</code>).</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME(tz)</td><td>NOT NULL, indexed</td><td>UTC timestamp. Indexed to support efficient daily-limit queries and history retrieval.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ─────────────────── AUDIT_LOGS ─────────────────── -->
+      <h2>Table: <code>audit_logs</code></h2>
+      <p>Append-only event log. Every key action (success or failure) writes a row here, including unauthenticated events like failed logins from unknown emails.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>INTEGER</td><td>PK, auto-increment</td><td>Unique log entry identifier</td></tr>
+            <tr><td><code>timestamp</code></td><td>DATETIME(tz)</td><td>NOT NULL, indexed</td><td>UTC time of the event.</td></tr>
+            <tr><td><code>user_id</code></td><td>INTEGER</td><td>FK → users.id, indexed, nullable</td><td>NULL for unauthenticated events (e.g. login attempt with unknown email).</td></tr>
+            <tr><td><code>action</code></td><td>VARCHAR(64)</td><td>NOT NULL</td><td>Event type string (see table below).</td></tr>
+            <tr><td><code>amount</code></td><td>NUMERIC(18,2)</td><td>nullable</td><td>Monetary amount for deposit/transfer events. NULL for auth events.</td></tr>
+            <tr><td><code>ip_address</code></td><td>VARCHAR(64)</td><td>nullable</td><td>Client IP address. Best-effort; may be NULL if not available.</td></tr>
+            <tr><td><code>details</code></td><td>VARCHAR(255)</td><td>nullable</td><td>Extra context, e.g. <code>duplicate_email</code>, <code>insufficient_funds</code>, <code>to=bob@example.com</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Audit Action Catalog</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Action</th><th>Trigger</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>register_success</code></td><td>New user and account created successfully</td></tr>
+            <tr><td><code>register_failure</code></td><td>Registration attempt failed (bad password or duplicate email)</td></tr>
+            <tr><td><code>login_failure</code></td><td>Wrong password or unknown email</td></tr>
+            <tr><td><code>login_locked</code></td><td>Login attempted while account is locked</td></tr>
+            <tr><td><code>deposit</code></td><td>Successful deposit operation</td></tr>
+            <tr><td><code>transfer</code></td><td>Successful transfer operation</td></tr>
+            <tr><td><code>transfer_failure</code></td><td>Transfer rejected by a business rule</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>

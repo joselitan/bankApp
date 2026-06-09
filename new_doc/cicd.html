@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CI / CD — SecureCore Bank Docs</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-hdr">
+        <div class="breadcrumb">Development</div>
+        <h1>CI / CD</h1>
+        <p class="lead">GitHub Actions workflows for automated testing, sprint planning, Jira validation, and regression bug detection.</p>
+      </div>
+
+      <h2>Workflow Overview</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Workflow File</th><th>Name</th><th>Trigger</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>api-regression.yml</code></td>
+              <td>API Regression (pytest)</td>
+              <td>Weekly (Mon 07:00 UTC) · Manual</td>
+              <td>Runs the full pytest suite and uploads a JUnit XML test report as an artifact.</td>
+            </tr>
+            <tr>
+              <td><code>sprint-orchestrator.yml</code></td>
+              <td>Sprint Orchestrator (Mode 1)</td>
+              <td>Push to <code>option-a/sprint-orchestrator</code> · Weekly (Mon 08:00 UTC) · Manual</td>
+              <td>Fetches Jira issues via JQL, generates <code>SPRINT_PLAN.md</code>, and uploads it as an artifact.</td>
+            </tr>
+            <tr>
+              <td><code>sprint-agent.yml</code></td>
+              <td>Sprint Agent</td>
+              <td>Manual</td>
+              <td>Automates sprint-level Jira operations (labelling, status updates) for the active sprint.</td>
+            </tr>
+            <tr>
+              <td><code>regression-bug-agent.yml</code></td>
+              <td>Regression Bug Agent</td>
+              <td>Manual</td>
+              <td>Runs <code>tools/jira/regression_bug_agent.py</code> to detect and file regression bugs from test failures.</td>
+            </tr>
+            <tr>
+              <td><code>verify-jira.yml</code></td>
+              <td>Verify Jira Connection</td>
+              <td>Manual</td>
+              <td>Verifies that the Jira API credentials (secrets) are valid and the project is reachable.</td>
+            </tr>
+            <tr>
+              <td><code>verify-test-gate.yml</code></td>
+              <td>Verify Test Gate</td>
+              <td>Manual</td>
+              <td>Validates that all sprint tickets linked to tests are passing before marking a sprint complete.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr>
+
+      <!-- ─────────────────────────────────────────── -->
+      <h2>API Regression Workflow</h2>
+      <p>File: <code>.github/workflows/api-regression.yml</code></p>
+      <p>Runs the full test suite against a fresh SQLite database on every scheduled run or manual trigger. Uploads a JUnit XML results file as a downloadable artifact.</p>
+
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    A([Trigger: Weekly Mon 07:00 UTC\nor workflow_dispatch]) --> B[Checkout repository]
+    B --> C[Setup Python 3.11]
+    C --> D[pip install -e . and dev extras]
+    D --> E[pytest -q --junitxml=test-results/pytest-junit.xml]
+    E --> F{Tests pass?}
+    F -- Yes --> G[Upload test-results artifact]
+    F -- No  --> G
+    G --> H([End])
+        </div>
+      </div>
+      <p class="diagram-caption">Figure 7 — API Regression Workflow</p>
+
+      <h3>Artifacts Produced</h3>
+      <ul>
+        <li><strong><code>api-regression-results</code></strong> — contains <code>test-results/pytest-junit.xml</code></li>
+        <li>The artifact is uploaded with <code>if: always()</code> so it is available even when tests fail.</li>
+      </ul>
+
+      <h3>Required Secrets</h3>
+      <p>This workflow uses no secrets — it runs tests against a temporary in-memory SQLite database created by <code>conftest.py</code>.</p>
+
+      <hr>
+
+      <!-- ─────────────────────────────────────────── -->
+      <h2>Sprint Orchestrator Workflow</h2>
+      <p>File: <code>.github/workflows/sprint-orchestrator.yml</code></p>
+      <p>Connects to Jira, fetches candidate issues matching the configured JQL query, and generates a human-readable <code>SPRINT_PLAN.md</code> artifact. On <code>push</code> events, it only performs a syntax check (no live Jira calls).</p>
+
+      <div class="diagram-box">
+        <div class="mermaid">
+flowchart TD
+    T([Trigger: Push / Schedule / Manual]) --> A[Checkout repository]
+    A --> B[Setup Python 3.11]
+
+    B --> C{Event type?}
+    C -- push --> D[Syntax check only\npy_compile + jql.txt exists]
+    D --> END([End])
+
+    C -- schedule or dispatch --> E[Fetch issues from Jira\npython tools/jira/fetch_issues.py]
+    E --> F[Generate SPRINT_PLAN.md\npython tools/jira/generate_sprint_plan.py]
+    F --> G[Upload sprint-plan artifact\nSPRINT_PLAN.md + issues.json + jql.txt]
+    G --> END
+        </div>
+      </div>
+      <p class="diagram-caption">Figure 8 — Sprint Orchestrator Workflow</p>
+
+      <h3>Required Secrets</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Secret</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>JIRA_BASE_URL</code></td><td>Your Atlassian domain, e.g. <code>https://yourorg.atlassian.net</code></td></tr>
+            <tr><td><code>JIRA_EMAIL</code></td><td>Email address of the Jira account used for API access</td></tr>
+            <tr><td><code>JIRA_API_TOKEN</code></td><td>Atlassian API token (created in <em>Atlassian Account Settings → Security</em>)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Configuring the JQL Query</h3>
+      <p>Edit <code>tools/jira/jql.txt</code> to change which issues are fetched. The default query selects all issues in the <code>BAN</code> project with label <code>ready-for-sprint</code>:</p>
+      <pre><code>project = BAN AND labels = "ready-for-sprint" ORDER BY priority DESC</code></pre>
+
+      <h3>Artifacts Produced</h3>
+      <ul>
+        <li><strong><code>sprint-plan</code></strong> — contains:
+          <ul>
+            <li><code>SPRINT_PLAN.md</code> — generated Markdown sprint plan</li>
+            <li><code>tools/jira/issues.json</code> — raw Jira issue data</li>
+            <li><code>tools/jira/jql.txt</code> — the JQL query used</li>
+          </ul>
+        </li>
+      </ul>
+
+      <hr>
+
+      <!-- ─────────────────────────────────────────── -->
+      <h2>Jira Tooling (<code>tools/jira/</code>)</h2>
+      <p>A collection of standalone Python scripts for Jira automation. These scripts are used both locally and by the GitHub Actions workflows.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Script</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>fetch_issues.py</code></td><td>Fetches Jira issues via JQL and writes them to <code>issues.json</code></td></tr>
+            <tr><td><code>generate_sprint_plan.py</code></td><td>Reads <code>issues.json</code> and generates a formatted <code>SPRINT_PLAN.md</code></td></tr>
+            <tr><td><code>sprint_agent.py</code></td><td>Applies sprint management actions (label, transition, assign) to Jira tickets</td></tr>
+            <tr><td><code>regression_bug_agent.py</code></td><td>Parses test failure output and creates Jira bug tickets automatically</td></tr>
+            <tr><td><code>label_ready_for_sprint.py</code></td><td>Bulk-applies the <code>ready-for-sprint</code> label to a list of issue keys</td></tr>
+            <tr><td><code>verify_connection.py</code></td><td>Quick sanity check that Jira API credentials work</td></tr>
+            <tr><td><code>verify_test_gate.py</code></td><td>Verifies all sprint tickets with test references are currently passing</td></tr>
+            <tr><td><code>workflow.py</code></td><td>Helper module for Jira workflow transitions</td></tr>
+            <tr><td><code>issues.py</code></td><td>Helper module for Jira issue CRUD operations</td></tr>
+            <tr><td><code>agile.py</code></td><td>Jira Agile board &amp; sprint operations. Key functions: <code>create_sprint()</code>, <code>start_sprint()</code>, <code>add_issues_to_sprint()</code>, <code>list_sprints()</code>, <code>close_sprint()</code></td></tr>
+            <tr><td><code>env.py</code></td><td>Loads Jira credentials from environment variables or <code>.env</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Running Jira Scripts Locally</h3>
+      <p>Set your credentials in a <code>.env</code> file or as environment variables, then run any script directly:</p>
+      <pre><code># Set credentials
+export JIRA_BASE_URL="https://yourorg.atlassian.net"
+export JIRA_EMAIL="you@example.com"
+export JIRA_API_TOKEN="your-api-token"
+
+# Verify connection
+python tools/jira/verify_connection.py
+
+# Fetch issues
+python tools/jira/fetch_issues.py \
+  --jql-file tools/jira/jql.txt \
+  --max-results 25 \
+  --out tools/jira/issues.json
+
+# Generate sprint plan
+python tools/jira/generate_sprint_plan.py \
+  --in tools/jira/issues.json \
+  --out SPRINT_PLAN.md</code></pre>
+
+      <hr>
+
+      <h2>Sprint Lifecycle (<code>agile.py</code>)</h2>
+      <p>The <code>tools/jira/agile.py</code> module manages the full sprint lifecycle programmatically. The <code>start_sprint()</code> function was added to fix a gap where sprints were created and populated but never activated on the board.</p>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">⚠️</span>
+        <div>A sprint that is only <strong>created</strong> (<code>state: future</code>) is <strong>not visible on the active board</strong> and cannot be tracked. You must call <code>start_sprint()</code> to activate it.</div>
+      </div>
+
+      <h3>Sprint State Machine</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>State</th><th>Function</th><th>Board Visible</th><th>Trackable</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>future</code></td><td><code>create_sprint()</code></td><td>Backlog only</td><td>No</td></tr>
+            <tr><td><code>active</code></td><td><code>start_sprint()</code></td><td>✅ Active board</td><td>✅ Yes</td></tr>
+            <tr><td><code>closed</code></td><td><code>close_sprint()</code></td><td>Reports only</td><td>Read-only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Full Sprint Creation Workflow</h3>
+      <pre><code>from tools.jira.env import load_dotenv
+load_dotenv()
+from tools.jira.agile import create_sprint, add_issues_to_sprint, start_sprint
+
+# 1. Create the sprint shell on board 34
+sprint = create_sprint(34, "Sprint 3 - Frontend")
+sprint_id = sprint["id"]          # e.g. 301
+
+# 2. Move tickets from backlog into the sprint
+add_issues_to_sprint(sprint_id, ["BAN-19", "BAN-20", "BAN-21", "BAN-22"])
+
+# 3. Activate the sprint — this is what makes it visible on the board
+start_sprint(
+    sprint_id,
+    start_date="2026-06-24T00:00:00.000Z",
+    end_date="2026-07-07T00:00:00.000Z",
+)
+
+# 4. At end of sprint — close it
+# close_sprint(sprint_id)</code></pre>
+
+      <h3><code>start_sprint()</code> Reference</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>sprint_id</code></td><td>int</td><td>Yes</td><td>Numeric Jira sprint ID (returned by <code>create_sprint()</code>)</td></tr>
+            <tr><td><code>start_date</code></td><td>str</td><td>Yes</td><td>ISO-8601 UTC datetime, e.g. <code>"2026-06-09T00:00:00.000Z"</code></td></tr>
+            <tr><td><code>end_date</code></td><td>str</td><td>Yes</td><td>ISO-8601 UTC datetime for sprint end</td></tr>
+            <tr><td><code>name</code></td><td>str</td><td>No</td><td>Optionally rename the sprint at activation time. Max 30 characters.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>

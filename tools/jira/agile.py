@@ -112,6 +112,36 @@ def list_sprints(
     return _request("GET", f"/rest/agile/1.0/board/{int(board_id)}/sprint{qs}")
 
 
+def start_sprint(
+    sprint_id: int,
+    *,
+    start_date: str,
+    end_date: str,
+    name: str | None = None,
+) -> dict:
+    """Start (activate) a sprint.
+
+    Uses a partial POST update per the Jira Agile REST API spec.
+
+    Args:
+        sprint_id:  The numeric sprint ID to start.
+        start_date: ISO-8601 date string, e.g. "2026-06-09T00:00:00.000Z"
+        end_date:   ISO-8601 date string, e.g. "2026-06-23T00:00:00.000Z"
+        name:       Optional — rename the sprint at activation time.
+
+    Returns:
+        The updated sprint object from the Jira API.
+    """
+    payload: dict = {
+        "state": "active",
+        "startDate": start_date,
+        "endDate": end_date,
+    }
+    if name is not None:
+        payload["name"] = name
+    return _request("POST", f"/rest/agile/1.0/sprint/{int(sprint_id)}", payload)
+
+
 def close_sprint(sprint_id: int) -> dict:
     """Close a sprint.
 

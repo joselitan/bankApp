@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — SecureCore Bank Docs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-hdr">
+        <div class="breadcrumb">Getting Started</div>
+        <h1>Getting Started</h1>
+        <p class="lead">Install dependencies, configure the environment, and make your first API call in under five minutes.</p>
+      </div>
+
+      <h2>Prerequisites</h2>
+      <ul class="checklist">
+        <li>Python 3.11 or higher</li>
+        <li>pip (bundled with Python 3.11+)</li>
+        <li>Git (to clone the repository)</li>
+        <li>A terminal (bash, zsh, PowerShell)</li>
+        <li>Optionally: Postman or curl for manual API testing</li>
+      </ul>
+
+      <h2>Installation</h2>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>Clone the repository</h4>
+            <p>Get the source code onto your machine.</p>
+          </div>
+        </div>
+      </div>
+      <pre><code>git clone https://github.com/joselitan/bankApp.git
+cd bankApp</code></pre>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>Create a virtual environment</h4>
+            <p>Isolate project dependencies from your system Python.</p>
+          </div>
+        </div>
+      </div>
+      <pre><code>python -m venv .venv
+source .venv/bin/activate      # macOS / Linux
+# .venv\Scripts\activate       # Windows PowerShell</code></pre>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>Install dependencies</h4>
+            <p>Install the package in editable mode with all development extras.</p>
+          </div>
+        </div>
+      </div>
+      <pre><code>python -m pip install -U pip
+python -m pip install -e '.[dev]'</code></pre>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>Configure environment (optional)</h4>
+            <p>Create a <code>.env</code> file to override default settings. All settings have sensible defaults for local development.</p>
+          </div>
+        </div>
+      </div>
+      <pre><code># .env (optional — copy this template)
+DATABASE_URL=sqlite:///./securecore_bank.db
+SECRET_KEY=your-super-secret-key-change-in-production</code></pre>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">⚠️</span>
+        <div>The default <code>SECRET_KEY</code> is <code>dev-only-change-me</code>. Always override this in any non-local environment.</div>
+      </div>
+
+      <h2>Environment Variables</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>DATABASE_URL</code></td>
+              <td><code>sqlite:///./securecore_bank.db</code></td>
+              <td>SQLAlchemy database URL. Change to <code>postgresql://...</code> for Postgres.</td>
+            </tr>
+            <tr>
+              <td><code>SECRET_KEY</code></td>
+              <td><code>dev-only-change-me</code></td>
+              <td>Secret used to sign and verify JWT tokens. Must be a long, random string in production.</td>
+            </tr>
+            <tr>
+              <td><code>APP_NAME</code></td>
+              <td><code>SecureCore Bank</code></td>
+              <td>Display name shown in the OpenAPI documentation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Running the Server</h2>
+      <p>Start the development server with auto-reload:</p>
+      <pre><code># Using uvicorn directly
+uvicorn app.main:app --reload
+
+# Or using the Makefile target
+make run</code></pre>
+
+      <p>The server will start at <strong>http://127.0.0.1:8000</strong>. The database file <code>securecore_bank.db</code> is created automatically on first startup.</p>
+
+      <div class="callout callout-success">
+        <span class="callout-icon">✅</span>
+        <div>On startup the app calls <code>Base.metadata.create_all()</code> via the <code>lifespan</code> handler, so all tables are created automatically — no migration tool needed for SQLite.</div>
+      </div>
+
+      <h2>Verify the Server is Running</h2>
+      <pre><code>curl http://127.0.0.1:8000/health</code></pre>
+      <p>Expected response:</p>
+      <pre><code>{"status": "ok"}</code></pre>
+
+      <h2>Interactive API Docs (Swagger UI)</h2>
+      <p>FastAPI automatically generates interactive documentation. Open your browser and visit:</p>
+      <pre><code>http://127.0.0.1:8000/docs</code></pre>
+      <p>From the Swagger UI you can explore all endpoints, view schemas, and execute requests directly in the browser without any additional tooling.</p>
+
+      <h2>Your First API Workflow</h2>
+      <p>Here is a complete end-to-end curl workflow to register, log in, deposit, and transfer.</p>
+
+      <h3>1. Register a user</h3>
+      <pre><code>curl -s -X POST http://127.0.0.1:8000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com","full_name":"Alice Smith","password":"Secure1!"}'</code></pre>
+      <p>Response (201):</p>
+      <pre><code>{
+  "id": 1,
+  "email": "alice@example.com",
+  "full_name": "Alice Smith",
+  "account_number": "a1b2c3d4e5f6g7h8"
+}</code></pre>
+
+      <h3>2. Log in and get a token</h3>
+      <pre><code>curl -s -X POST http://127.0.0.1:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"alice@example.com","password":"Secure1!"}'</code></pre>
+      <p>Response (200):</p>
+      <pre><code>{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}</code></pre>
+
+      <h3>3. View account balance</h3>
+      <pre><code>curl -s http://127.0.0.1:8000/api/accounts/me \
+  -H "Authorization: Bearer &lt;your_token&gt;"</code></pre>
+
+      <h3>4. Deposit funds</h3>
+      <pre><code>curl -s -X POST http://127.0.0.1:8000/api/transactions/deposit \
+  -H "Authorization: Bearer &lt;your_token&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": "500.00"}'</code></pre>
+
+      <h2>Make Targets</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Command</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>make run</code></td><td>Start the server with uvicorn and auto-reload</td></tr>
+            <tr><td><code>make test</code></td><td>Run the full pytest test suite</td></tr>
+            <tr><td><code>make lint</code></td><td>Run Ruff linter (E, F, I rules)</td></tr>
+            <tr><td><code>make format</code></td><td>Run Ruff formatter</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">ℹ️</span>
+        <div>The <code>Makefile</code> uses <code>./.venv-1/bin/python</code> as the Python path. If your virtual environment is at a different path, either activate it first and use <code>python -m pytest</code> directly, or update the <code>VENV_PY</code> variable in the Makefile.</div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>

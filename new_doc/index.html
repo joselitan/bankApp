@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SecureCore Bank — Developer Documentation</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <main class="main">
+    <div class="content">
+
+      <div class="hero">
+        <h1>🏦 SecureCore Bank</h1>
+        <p class="lead">API-first banking MVP built with FastAPI, SQLAlchemy and SQLite. Complete authentication, account management, deposits, and transfers — secured with JWT and fully audited.</p>
+        <div class="pills">
+          <span class="pill">FastAPI</span>
+          <span class="pill">Python 3.11+</span>
+          <span class="pill">SQLAlchemy 2.x</span>
+          <span class="pill">Pydantic v2</span>
+          <span class="pill">JWT Auth</span>
+          <span class="pill">SQLite</span>
+          <span class="pill">pytest</span>
+          <span class="pill">Sprint 1 · MVP</span>
+        </div>
+      </div>
+
+      <div class="callout callout-success">
+        <span class="callout-icon">🏃</span>
+        <div>
+          <strong>Sprint 2 - Admin &amp; Security is active</strong>
+          &nbsp;·&nbsp; Jun 9 – Jun 23, 2026 &nbsp;·&nbsp; 7 tickets in progress.
+          <a href="sprints.html">View sprint status →</a>
+        </div>
+      </div>
+
+      <h2>What is SecureCore Bank?</h2>
+      <p>SecureCore Bank is a backend-only banking REST API designed as a training and portfolio project. It demonstrates real-world patterns such as secure authentication, transactional database operations, business-rule enforcement, audit logging, and automated testing — all within a clean, well-structured Python project.</p>
+      <p>The system is managed through a Jira-driven agile process with GitHub Actions automating both sprint planning and the API regression test suite.</p>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon">🔐</div>
+          <h3>Secure Authentication</h3>
+          <p>JWT Bearer tokens, PBKDF2-SHA256 password hashing, and automatic account lockout after 3 failed login attempts (10-minute cooldown).</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">💳</div>
+          <h3>Banking Operations</h3>
+          <p>Deposit funds ($1–$10,000) and transfer money between users (min $0.01, $5,000 daily limit) with full DB transaction atomicity.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📋</div>
+          <h3>Complete Audit Trail</h3>
+          <p>Every key action — registration, login attempts, deposits, transfers — is logged to an audit table with IP address, timestamp, and details.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧪</div>
+          <h3>Fully Tested</h3>
+          <p>8 pytest test files covering all business rules, boundary conditions, lockout behavior, atomicity, and audit log creation per JIRA ticket.</p>
+        </div>
+      </div>
+
+      <h2>Documentation Map</h2>
+      <p>Use the navigation cards below or the left sidebar to explore the documentation.</p>
+
+      <div class="nav-grid">
+        <a href="overview.html" class="nav-card">
+          <div class="nc-icon">🔍</div>
+          <h3>System Overview</h3>
+          <p>Architecture layers, technology stack, and key design decisions.</p>
+        </a>
+        <a href="getting-started.html" class="nav-card">
+          <div class="nc-icon">🚀</div>
+          <h3>Getting Started</h3>
+          <p>Installation, environment setup, and running your first API call.</p>
+        </a>
+        <a href="api-reference.html" class="nav-card">
+          <div class="nc-icon">📡</div>
+          <h3>API Reference</h3>
+          <p>All 8 endpoints with request / response examples and status codes.</p>
+        </a>
+        <a href="data-models.html" class="nav-card">
+          <div class="nc-icon">🗃</div>
+          <h3>Data Models</h3>
+          <p>ER diagram and detailed schema for all 4 database tables.</p>
+        </a>
+        <a href="use-cases.html" class="nav-card">
+          <div class="nc-icon">🎯</div>
+          <h3>Use Cases</h3>
+          <p>UML use case diagram showing all actors and system capabilities.</p>
+        </a>
+        <a href="auth-flow.html" class="nav-card">
+          <div class="nc-icon">🔐</div>
+          <h3>Auth Flow</h3>
+          <p>Sequence diagrams for registration, login, and account lockout.</p>
+        </a>
+        <a href="transactions.html" class="nav-card">
+          <div class="nc-icon">💸</div>
+          <h3>Transaction Flows</h3>
+          <p>Sequence diagrams for deposit and internal transfer with all business rules.</p>
+        </a>
+        <a href="testing.html" class="nav-card">
+          <div class="nc-icon">🧪</div>
+          <h3>Testing</h3>
+          <p>Test suite coverage per JIRA ticket and how to run tests locally.</p>
+        </a>
+        <a href="cicd.html" class="nav-card">
+          <div class="nc-icon">⚙️</div>
+          <h3>CI / CD</h3>
+          <p>GitHub Actions pipelines for regression testing and sprint planning.</p>
+        </a>
+        <a href="sprints.html" class="nav-card">
+          <div class="nc-icon">🏃</div>
+          <h3>Sprints</h3>
+          <p>Active sprint, Sprint 2 tickets, sprint history, and Jira lifecycle.</p>
+        </a>
+      </div>
+
+      <hr>
+
+      <h2>Sprint 1 — Delivered (Jira: BAN Sprint 1)</h2>
+      <p>All 8 MVP stories were delivered, fully tested, and are tracked in Jira as <strong>BAN Sprint 1</strong> (ID: 199). All tickets are <strong>Done</strong>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Ticket</th><th>Feature</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>BAN-6</code></td><td>FR-01 User Registration API + validation rules</td><td>✅ Done</td></tr>
+            <tr><td><code>BAN-10</code></td><td>FR-04 Create default Savings account on registration</td><td>✅ Done</td></tr>
+            <tr><td><code>BAN-7</code></td><td>FR-02 Login/Logout + lockout after 3 failures</td><td>✅ Done</td></tr>
+            <tr><td><code>BAN-18</code></td><td>FR-10 Audit log table + logging for key actions</td><td>✅ Done</td></tr>
+            <tr><td><code>BAN-11</code></td><td>FR-05 Account details + last 10 transactions</td><td>✅ Done</td></tr>
+            <tr><td><code>BAN-14</code></td><td>FR-07 Deposit endpoint with min/max validation</td><td>✅ Done</td></tr>
+            <tr><td><code>BAN-16</code></td><td>NFR-06 Transaction atomicity + rollback on failure</td><td>✅ Done</td></tr>
+            <tr><td><code>BAN-15</code></td><td>FR-08 Internal transfer with daily limit ($5,000)</td><td>✅ Done</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Sprint 2 — Active (Jun 9–23, 2026)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Key</th><th>Feature</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>BAN-8</code></td><td>FR-03 Role-Based Access Control (Customer/Admin)</td><td>🔲 To Do</td></tr>
+            <tr><td><code>BAN-9</code></td><td>NFR-03 Security headers via middleware</td><td>🔲 To Do</td></tr>
+            <tr><td><code>BAN-12</code></td><td>FR-06 Admin account freeze; frozen accounts block transfers</td><td>🔲 To Do</td></tr>
+            <tr><td><code>BAN-13</code></td><td>FR-11 Admin dashboard API: users + transaction counts</td><td>🔲 To Do</td></tr>
+            <tr><td><code>BAN-17</code></td><td>FR-09 External withdraw simulation with 2FA dummy code</td><td>🔲 To Do</td></tr>
+            <tr><td><code>BAN-23</code></td><td>QA: TEST_PLAN.md manual scenarios</td><td>🔲 To Do</td></tr>
+            <tr><td><code>BAN-24</code></td><td>QA: BUG_REPORT_TEMPLATE.md</td><td>🔲 To Do</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><a href="sprints.html">→ Full sprint details, dependency order, and sprint history</a></p>
+
+      <hr>
+
+      <h2>Quick Reference</h2>
+      <div class="two-col">
+        <div>
+          <h3>Base URL</h3>
+          <pre><code>http://127.0.0.1:8000</code></pre>
+          <h3>Swagger UI</h3>
+          <pre><code>http://127.0.0.1:8000/docs</code></pre>
+        </div>
+        <div>
+          <h3>Run the server</h3>
+          <pre><code>uvicorn app.main:app --reload
+# or
+make run</code></pre>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>

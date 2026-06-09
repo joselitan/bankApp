@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Use Cases — SecureCore Bank Docs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-hdr">
+        <div class="breadcrumb">Diagrams &amp; Flows</div>
+        <h1>Use Cases</h1>
+        <p class="lead">UML Use Case Diagram showing all system actors, their capabilities, and include relationships between use cases.</p>
+      </div>
+
+      <h2>UML Use Case Diagram</h2>
+      <p>The system exposes two roles: a <strong>Guest User</strong> (unauthenticated) who can register and log in, and an <strong>Authenticated User</strong> who has full access to banking operations after obtaining a JWT token.</p>
+
+      <div class="svg-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 680"
+             style="width:100%;max-width:900px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+
+          <!-- System boundary -->
+          <rect x="150" y="25" width="620" height="630" rx="12"
+                fill="#f8faff" stroke="#0969da" stroke-width="1.8"/>
+          <text x="460" y="19" text-anchor="middle" font-size="12"
+                fill="#0969da" font-style="italic" font-family="inherit">«system»</text>
+          <text x="460" y="58" text-anchor="middle" font-size="17"
+                font-weight="700" fill="#1a1f2e" font-family="inherit">SecureCore Bank API</text>
+
+          <!-- ══ ACTOR: Guest User ══ -->
+          <circle cx="65" cy="190" r="18" fill="none" stroke="#24292f" stroke-width="2"/>
+          <line x1="65" y1="208" x2="65" y2="258" stroke="#24292f" stroke-width="2"/>
+          <line x1="40" y1="235" x2="90"  y2="235" stroke="#24292f" stroke-width="2"/>
+          <line x1="65" y1="258" x2="42"  y2="288" stroke="#24292f" stroke-width="2"/>
+          <line x1="65" y1="258" x2="88"  y2="288" stroke="#24292f" stroke-width="2"/>
+          <text x="65" y="308" text-anchor="middle" font-size="13"
+                font-weight="600" fill="#24292f" font-family="inherit">Guest</text>
+          <text x="65" y="324" text-anchor="middle" font-size="13"
+                font-weight="600" fill="#24292f" font-family="inherit">User</text>
+
+          <!-- ══ ACTOR: Registered User ══ -->
+          <circle cx="855" cy="310" r="18" fill="none" stroke="#0969da" stroke-width="2"/>
+          <line x1="855" y1="328" x2="855" y2="378" stroke="#0969da" stroke-width="2"/>
+          <line x1="830" y1="355" x2="880" y2="355" stroke="#0969da" stroke-width="2"/>
+          <line x1="855" y1="378" x2="832" y2="408" stroke="#0969da" stroke-width="2"/>
+          <line x1="855" y1="378" x2="878" y2="408" stroke="#0969da" stroke-width="2"/>
+          <text x="855" y="428" text-anchor="middle" font-size="13"
+                font-weight="600" fill="#0969da" font-family="inherit">Registered</text>
+          <text x="855" y="444" text-anchor="middle" font-size="13"
+                font-weight="600" fill="#0969da" font-family="inherit">User</text>
+
+          <!-- ══ USE CASES ══ -->
+
+          <!-- 1. Register Account -->
+          <ellipse cx="325" cy="120" rx="115" ry="26"
+                   fill="white" stroke="#d0d7de" stroke-width="1.5"/>
+          <text x="325" y="125" text-anchor="middle" font-size="13"
+                fill="#24292f" font-family="inherit">Register Account</text>
+
+          <!-- 2. Login -->
+          <ellipse cx="325" cy="235" rx="90" ry="26"
+                   fill="white" stroke="#d0d7de" stroke-width="1.5"/>
+          <text x="325" y="240" text-anchor="middle" font-size="13"
+                fill="#24292f" font-family="inherit">Login</text>
+
+          <!-- 3. Create Default Account (include, dashed yellow) -->
+          <ellipse cx="325" cy="385" rx="130" ry="26"
+                   fill="#fff8c5" stroke="#d4a017" stroke-width="1.5" stroke-dasharray="6,3"/>
+          <text x="325" y="381" text-anchor="middle" font-size="11"
+                fill="#9a6700" font-style="italic" font-family="inherit">«creates»</text>
+          <text x="325" y="396" text-anchor="middle" font-size="12"
+                fill="#7d4e00" font-family="inherit">Default Savings Account</text>
+
+          <!-- 4. View Account & Balance -->
+          <ellipse cx="615" cy="120" rx="128" ry="26"
+                   fill="white" stroke="#d0d7de" stroke-width="1.5"/>
+          <text x="615" y="125" text-anchor="middle" font-size="13"
+                fill="#24292f" font-family="inherit">View Account &amp; Balance</text>
+
+          <!-- 5. Deposit Funds -->
+          <ellipse cx="615" cy="255" rx="105" ry="26"
+                   fill="white" stroke="#d0d7de" stroke-width="1.5"/>
+          <text x="615" y="260" text-anchor="middle" font-size="13"
+                fill="#24292f" font-family="inherit">Deposit Funds</text>
+
+          <!-- 6. Transfer Money -->
+          <ellipse cx="615" cy="395" rx="105" ry="26"
+                   fill="white" stroke="#d0d7de" stroke-width="1.5"/>
+          <text x="615" y="400" text-anchor="middle" font-size="13"
+                fill="#24292f" font-family="inherit">Transfer Money</text>
+
+          <!-- 7. Daily Transfer Limit (include, dashed blue) -->
+          <ellipse cx="615" cy="535" rx="138" ry="26"
+                   fill="#ddf4ff" stroke="#0550ae" stroke-width="1.5" stroke-dasharray="6,3"/>
+          <text x="615" y="531" text-anchor="middle" font-size="11"
+                fill="#0550ae" font-style="italic" font-family="inherit">«validates»</text>
+          <text x="615" y="546" text-anchor="middle" font-size="12"
+                fill="#0550ae" font-family="inherit">Daily Transfer Limit ($5,000)</text>
+
+          <!-- 8. Logout -->
+          <ellipse cx="475" cy="620" rx="88" ry="26"
+                   fill="white" stroke="#d0d7de" stroke-width="1.5"/>
+          <text x="475" y="625" text-anchor="middle" font-size="13"
+                fill="#24292f" font-family="inherit">Logout</text>
+
+          <!-- ══ CONNECTIONS: Guest → Use Cases ══ -->
+          <line x1="83"  y1="184" x2="210" y2="128" stroke="#57606a" stroke-width="1.5"/>
+          <line x1="83"  y1="204" x2="235" y2="238" stroke="#57606a" stroke-width="1.5"/>
+
+          <!-- ══ INCLUDE: Register → Create Default Account ══ -->
+          <line x1="325" y1="146" x2="325" y2="359"
+                stroke="#d4a017" stroke-width="1.3" stroke-dasharray="6,3"/>
+          <polygon points="325,359 320,347 330,347" fill="#d4a017"/>
+          <text x="342" y="258" font-size="11" fill="#9a6700"
+                font-style="italic" font-family="inherit">«include»</text>
+
+          <!-- ══ CONNECTIONS: Registered → Use Cases ══ -->
+          <line x1="837" y1="300" x2="743" y2="132" stroke="#0969da" stroke-width="1.5"/>
+          <line x1="837" y1="318" x2="720" y2="260" stroke="#0969da" stroke-width="1.5"/>
+          <line x1="837" y1="336" x2="720" y2="397" stroke="#0969da" stroke-width="1.5"/>
+          <line x1="837" y1="354" x2="563" y2="614" stroke="#0969da" stroke-width="1.5"/>
+
+          <!-- ══ INCLUDE: Transfer → Daily Transfer Limit ══ -->
+          <line x1="615" y1="421" x2="615" y2="509"
+                stroke="#0550ae" stroke-width="1.3" stroke-dasharray="6,3"/>
+          <polygon points="615,509 610,497 620,497" fill="#0550ae"/>
+          <text x="622" y="470" font-size="11" fill="#0550ae"
+                font-style="italic" font-family="inherit">«include»</text>
+
+          <!-- Legend -->
+          <rect x="156" y="637" width="200" height="14" rx="3"
+                fill="none" stroke="none"/>
+          <line x1="158" y1="644" x2="188" y2="644"
+                stroke="#d4a017" stroke-width="1.3" stroke-dasharray="5,3"/>
+          <text x="192" y="648" font-size="11" fill="#9a6700" font-family="inherit">«include» relationship</text>
+        </svg>
+      </div>
+      <p class="diagram-caption">Figure 2 — UML Use Case Diagram (SecureCore Bank, Sprint 1)</p>
+
+      <!-- ─────────────────────────────────────────── -->
+      <h2>Actors</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Actor</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Guest User</strong></td>
+              <td>Any unauthenticated HTTP client. Can register a new account or attempt to log in. Has no access to protected endpoints.</td>
+            </tr>
+            <tr>
+              <td><strong>Registered User</strong></td>
+              <td>An authenticated user who has obtained a valid JWT Bearer token via login. Can access all banking operations.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ─────────────────────────────────────────── -->
+      <h2>Use Case Catalog</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Use Case</th><th>Actor</th><th>Endpoint</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Register Account</strong></td>
+              <td>Guest User</td>
+              <td><code>POST /api/auth/register</code></td>
+              <td>Create a new user with validated email, full name, and a password meeting the strength policy. Automatically triggers <em>Create Default Savings Account</em>.</td>
+            </tr>
+            <tr>
+              <td><strong>Create Default Savings Account</strong></td>
+              <td>System (include)</td>
+              <td>—</td>
+              <td>Created atomically during registration. Balance starts at $0.00. The account number is a random 16-char hex string.</td>
+            </tr>
+            <tr>
+              <td><strong>Login</strong></td>
+              <td>Guest User</td>
+              <td><code>POST /api/auth/login</code></td>
+              <td>Verify email + password. Returns a JWT token (30-min expiry) on success. Locks the account for 10 minutes after 3 consecutive failures.</td>
+            </tr>
+            <tr>
+              <td><strong>View Account &amp; Balance</strong></td>
+              <td>Registered User</td>
+              <td><code>GET /api/accounts/me</code></td>
+              <td>Retrieve the authenticated user's account number, current balance, and last 10 transactions ordered by most recent first.</td>
+            </tr>
+            <tr>
+              <td><strong>Deposit Funds</strong></td>
+              <td>Registered User</td>
+              <td><code>POST /api/transactions/deposit</code></td>
+              <td>Add money to the account. Amount must be between $1.00 and $10,000.00. Logged to the audit table.</td>
+            </tr>
+            <tr>
+              <td><strong>Transfer Money</strong></td>
+              <td>Registered User</td>
+              <td><code>POST /api/transactions/transfer</code></td>
+              <td>Send money to another registered user by email. Enforces daily limit, prevents self-transfer and overdraft. Atomic DB commit. Automatically includes <em>Validate Daily Transfer Limit</em>.</td>
+            </tr>
+            <tr>
+              <td><strong>Validate Daily Transfer Limit</strong></td>
+              <td>System (include)</td>
+              <td>—</td>
+              <td>Computed as the sum of all <code>transfer_out</code> transactions on the current UTC day for the sender's account. Must not exceed $5,000.00.</td>
+            </tr>
+            <tr>
+              <td><strong>Logout</strong></td>
+              <td>Registered User</td>
+              <td><code>POST /api/auth/logout</code></td>
+              <td>Stateless — the server returns confirmation and the client discards the token. No server-side revocation in MVP.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>

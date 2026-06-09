@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Overview — SecureCore Bank Docs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-hdr">
+        <div class="breadcrumb">Getting Started</div>
+        <h1>System Overview</h1>
+        <p class="lead">Architecture, technology stack, and key design decisions behind the SecureCore Bank MVP backend.</p>
+      </div>
+
+      <h2>What the System Does</h2>
+      <p>SecureCore Bank exposes a REST API that enables a client (e.g. Postman, a mobile app, or a web frontend) to:</p>
+      <ul>
+        <li>Register a new user and receive a default Savings account automatically</li>
+        <li>Log in with email + password and receive a short-lived JWT Bearer token</li>
+        <li>View their account balance and the last 10 transactions</li>
+        <li>Deposit money into their account (between $1.00 and $10,000.00 per operation)</li>
+        <li>Transfer money to another registered user (min $0.01, $5,000 daily outgoing cap)</li>
+        <li>Log out (stateless — the client discards the token)</li>
+      </ul>
+      <p>Every meaningful action is stored in an audit log table for traceability. All money-moving operations are wrapped in a single database transaction to guarantee atomicity.</p>
+
+      <h2>Architecture Layers</h2>
+      <p>The application follows a clean, layered architecture where each layer has a single responsibility.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Layer</th><th>Location</th><th>Responsibility</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>HTTP Client</strong></td>
+              <td>External (Postman, curl, web app)</td>
+              <td>Sends HTTP requests; receives JSON responses</td>
+            </tr>
+            <tr>
+              <td><strong>FastAPI Routes</strong></td>
+              <td><code>app/api/v1/</code></td>
+              <td>Receives requests, validates input via Pydantic schemas, returns responses. Handles HTTP-level concerns (status codes, auth headers).</td>
+            </tr>
+            <tr>
+              <td><strong>Dependency Injection</strong></td>
+              <td><code>app/api/deps.py</code></td>
+              <td>Provides the authenticated <code>User</code> object and DB session to route handlers via FastAPI <code>Depends()</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Services / Business Logic</strong></td>
+              <td><code>app/services/</code></td>
+              <td>Encapsulates domain rules: password policy, lockout logic, account number generation, and audit log writing. Framework-independent.</td>
+            </tr>
+            <tr>
+              <td><strong>ORM Models</strong></td>
+              <td><code>app/models/</code></td>
+              <td>SQLAlchemy 2.x mapped classes representing database tables (<code>User</code>, <code>Account</code>, <code>Transaction</code>, <code>AuditLog</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Pydantic Schemas</strong></td>
+              <td><code>app/schemas/</code></td>
+              <td>Request / response data shapes. Separate from ORM models, preventing accidental data leakage.</td>
+            </tr>
+            <tr>
+              <td><strong>Database</strong></td>
+              <td><code>securecore_bank.db</code></td>
+              <td>SQLite file. Managed via SQLAlchemy; swappable to PostgreSQL by changing <code>DATABASE_URL</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Technology Stack</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Technology</th><th>Version</th><th>Purpose</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Python</strong></td><td>≥ 3.11</td><td>Runtime language</td></tr>
+            <tr><td><strong>FastAPI</strong></td><td>≥ 0.111</td><td>Web framework — async-capable, OpenAPI auto-docs, dependency injection</td></tr>
+            <tr><td><strong>Uvicorn</strong></td><td>≥ 0.30</td><td>ASGI server (standard extras: watchgod reload, http-tools)</td></tr>
+            <tr><td><strong>SQLAlchemy</strong></td><td>≥ 2.0</td><td>ORM and SQL toolkit — mapped column style, type-annotated</td></tr>
+            <tr><td><strong>Pydantic v2</strong></td><td>≥ 2.7</td><td>Data validation and serialization for request/response schemas</td></tr>
+            <tr><td><strong>pydantic-settings</strong></td><td>≥ 2.3</td><td>Typed configuration from environment variables / <code>.env</code></td></tr>
+            <tr><td><strong>python-jose</strong></td><td>≥ 3.3</td><td>JWT encoding/decoding (HS256 algorithm)</td></tr>
+            <tr><td><strong>passlib[bcrypt]</strong></td><td>≥ 1.7</td><td>Password hashing — PBKDF2-SHA256 scheme used for MVP portability</td></tr>
+            <tr><td><strong>SQLite</strong></td><td>built-in</td><td>Database — zero-config, file-based, swappable to Postgres</td></tr>
+            <tr><td><strong>pytest</strong></td><td>≥ 8.2</td><td>Test framework</td></tr>
+            <tr><td><strong>httpx</strong></td><td>≥ 0.27</td><td>Async-compatible HTTP client used by FastAPI <code>TestClient</code></td></tr>
+            <tr><td><strong>Ruff</strong></td><td>≥ 0.5</td><td>Fast Python linter and formatter (E, F, I rules)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Project Directory Structure</h2>
+      <pre><code>app/
+├── main.py                 ← FastAPI app factory + lifespan (DB init)
+├── core/
+│   ├── config.py           ← Settings (DATABASE_URL, SECRET_KEY, APP_NAME)
+│   └── security.py         ← JWT creation/decode, password hash/verify
+├── api/
+│   ├── deps.py             ← get_current_user dependency
+│   ├── routes.py           ← Top-level router (mounts v1 sub-routers)
+│   └── v1/
+│       ├── auth.py         ← /register, /login, /logout
+│       ├── accounts.py     ← GET /me
+│       └── transactions.py ← /deposit, /transfer
+├── models/
+│   ├── user.py             ← User ORM model
+│   ├── account.py          ← Account ORM model
+│   ├── transaction.py      ← Transaction ORM model
+│   └── audit_log.py        ← AuditLog ORM model
+├── schemas/
+│   ├── auth.py             ← RegisterRequest/Response, LoginRequest, TokenResponse
+│   ├── accounts.py         ← AccountMeResponse, TransactionOut
+│   └── transactions.py     ← DepositRequest, TransferRequest
+├── services/
+│   ├── auth.py             ← register_user(), authenticate_user()
+│   ├── accounts.py         ← generate_account_number()
+│   └── audit.py            ← log_action()
+└── db/
+    ├── base.py             ← SQLAlchemy Base
+    └── session.py          ← Engine, SessionLocal, get_db(), init_db()</code></pre>
+
+      <h2>Security Design</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Concern</th><th>Implementation</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Password storage</strong></td>
+              <td>PBKDF2-SHA256 via <code>passlib</code>. Passwords are never stored in plain text. The hash is one-way.</td>
+            </tr>
+            <tr>
+              <td><strong>Password policy</strong></td>
+              <td>Min 8 characters, at least 1 digit, at least 1 special character (enforced server-side via regex).</td>
+            </tr>
+            <tr>
+              <td><strong>Authentication</strong></td>
+              <td>JWT Bearer tokens (HS256). Tokens expire after 30 minutes. The <code>sub</code> claim holds the numeric <code>user.id</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Brute-force defense</strong></td>
+              <td>Account locked for 10 minutes after 3 consecutive failed login attempts. Lock state stored in the <code>users</code> table.</td>
+            </tr>
+            <tr>
+              <td><strong>Error leakage</strong></td>
+              <td>Login returns a generic "Invalid credentials" message whether email or password is wrong, preventing user enumeration.</td>
+            </tr>
+            <tr>
+              <td><strong>Transaction atomicity</strong></td>
+              <td>Transfer operations flush all DB writes in a single <code>db.commit()</code>. Any exception triggers <code>db.rollback()</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Audit logging</strong></td>
+              <td>Every meaningful action is written to <code>audit_logs</code> including IP address, user_id, amount, and detail string.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Key Design Decisions</h2>
+
+      <h3>SQLite for MVP</h3>
+      <p>SQLite was chosen for zero-config local development. The ORM abstraction layer (SQLAlchemy) means switching to PostgreSQL in production requires only a change to the <code>DATABASE_URL</code> environment variable.</p>
+
+      <h3>One account per user</h3>
+      <p>The MVP assumes exactly one Savings account per user. The data model supports multiple accounts (via the <code>user_id</code> FK on <code>accounts</code>), but all business logic currently queries for the first account found.</p>
+
+      <h3>Stateless JWT logout</h3>
+      <p>The <code>POST /auth/logout</code> endpoint is intentionally a no-op on the server — it returns <code>{"logged_out": true}</code>. Token revocation is not implemented in the MVP. The client is responsible for discarding the token. A short expiry (30 minutes) limits the exposure window.</p>
+
+      <h3>Naive UTC timestamps for SQLite</h3>
+      <p>SQLite has limited timezone support. Lockout timestamps use naive UTC (<code>datetime.utcnow()</code>) for correct comparison. Created-at timestamps use timezone-aware UTC via <code>datetime.now(UTC)</code>.</p>
+
+      <h3>Service layer is framework-agnostic</h3>
+      <p>The <code>app/services/</code> functions only accept SQLAlchemy <code>Session</code> objects and domain models — no FastAPI <code>Request</code> or <code>Response</code> types (except optionally the <code>Request</code> for IP extraction in audit logging). This keeps business logic easily testable and portable.</p>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprints — SecureCore Bank Docs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link active"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-hdr">
+        <div class="breadcrumb">Development</div>
+        <h1>Sprints</h1>
+        <p class="lead">Sprint history, active sprint status, and ticket tracking across all iterations of SecureCore Bank.</p>
+      </div>
+
+      <!-- ═══ CURRENT SPRINT BANNER ═══ -->
+      <div class="callout callout-success">
+        <span class="callout-icon">🏃</span>
+        <div>
+          <strong>Sprint 2 - Admin &amp; Security</strong> is currently <strong>active</strong>
+          &nbsp;·&nbsp; Jun 9 – Jun 23, 2026 &nbsp;·&nbsp; Jira Sprint ID: 265 &nbsp;·&nbsp;
+          <a href="https://joselitan.atlassian.net/jira/software/projects/BAN/boards/34" target="_blank">Open board →</a>
+        </div>
+      </div>
+
+      <!-- ═══ SPRINT 2 ═══ -->
+      <h2>Sprint 2 — Active</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Key</th><th>Summary</th><th>Category</th><th>Status</th><th>Depends On</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-8" target="_blank"><code>BAN-8</code></a></td>
+              <td>FR-03 Role-Based Access Control (Customer / Admin) + HTTP 403 enforcement</td>
+              <td>Auth</td>
+              <td>🔲 To Do</td>
+              <td>BAN-7 (login)</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-9" target="_blank"><code>BAN-9</code></a></td>
+              <td>NFR-03 Add security headers (HTTPS simulation) via FastAPI middleware</td>
+              <td>Security</td>
+              <td>🔲 To Do</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-12" target="_blank"><code>BAN-12</code></a></td>
+              <td>FR-06 Admin can freeze account; frozen accounts cannot transfer</td>
+              <td>Admin</td>
+              <td>🔲 To Do</td>
+              <td>BAN-8 (RBAC)</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-13" target="_blank"><code>BAN-13</code></a></td>
+              <td>FR-11 Admin dashboard API: list all users + transaction counts</td>
+              <td>Admin</td>
+              <td>🔲 To Do</td>
+              <td>BAN-8 (RBAC)</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-17" target="_blank"><code>BAN-17</code></a></td>
+              <td>FR-09 External transfer (withdraw simulation) with 2FA dummy code</td>
+              <td>Transactions</td>
+              <td>🔲 To Do</td>
+              <td>BAN-12 (freeze check)</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-23" target="_blank"><code>BAN-23</code></a></td>
+              <td>QA: Create TEST_PLAN.md — manual scenarios (happy path, boundary, negative, UX)</td>
+              <td>QA</td>
+              <td>🔲 To Do</td>
+              <td>Sprint 1 done</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-24" target="_blank"><code>BAN-24</code></a></td>
+              <td>QA: Add BUG_REPORT_TEMPLATE.md for consistent defect reporting</td>
+              <td>QA</td>
+              <td>🔲 To Do</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Sprint 2 Scope &amp; Goals</h3>
+      <p>Sprint 2 extends the banking API with administrative controls, enhanced security, and QA artefacts:</p>
+      <ul>
+        <li><strong>RBAC (BAN-8):</strong> Customer vs Admin roles enforced at the API layer. All admin endpoints return HTTP 403 to customers. Default role for new users is <code>Customer</code>.</li>
+        <li><strong>Security Headers (BAN-9):</strong> FastAPI middleware adds <code>X-Content-Type-Options</code>, <code>X-Frame-Options</code>, and <code>Content-Security-Policy</code> to every response.</li>
+        <li><strong>Account Freezing (BAN-12):</strong> Admin-only <code>POST /api/admin/accounts/{id}/freeze</code> and <code>/unfreeze</code>. Frozen accounts are blocked from transfers. Logged to audit table.</li>
+        <li><strong>Admin Dashboard (BAN-13):</strong> <code>GET /api/admin/users</code> returns all users with their total transaction counts. Admin-only.</li>
+        <li><strong>External Withdraw + 2FA (BAN-17):</strong> Two-step flow — <code>POST /withdraw/start</code> generates a short-lived dummy code; <code>POST /withdraw/confirm</code> validates it and deducts balance atomically.</li>
+        <li><strong>Test Plan (BAN-23):</strong> <code>TEST_PLAN.md</code> covering happy-path, boundary, negative/security, and UI/UX manual scenarios mapped to FR/NFR IDs.</li>
+        <li><strong>Bug Report Template (BAN-24):</strong> <code>BUG_REPORT_TEMPLATE.md</code> with standard sections (summary, environment, severity, steps, expected vs actual, attachments).</li>
+      </ul>
+
+      <h3>Recommended Execution Order</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>BAN-8 — RBAC</h4>
+            <p>Must be first. BAN-12 and BAN-13 both require the admin role check to be in place.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>BAN-9 — Security Headers (parallel with BAN-8)</h4>
+            <p>Fully independent. Can be developed in parallel with RBAC.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>BAN-12 + BAN-13 — Freeze &amp; Admin Dashboard (parallel)</h4>
+            <p>Both require BAN-8. Can be developed concurrently once RBAC is merged.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>BAN-17 — External Withdraw + 2FA</h4>
+            <p>Should follow BAN-12 so the account-frozen check is already enforced in the withdrawal flow.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-n"></div>
+          <div class="step-body">
+            <h4>BAN-23 + BAN-24 — QA Docs</h4>
+            <p>Can be written at any point but are most complete at end of sprint with full feature knowledge.</p>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- ═══ SPRINT 1 ═══ -->
+      <h2>Sprint 1 — Completed</h2>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">ℹ️</span>
+        <div>
+          Tracked in Jira as <strong>BAN Sprint 1</strong> (Sprint ID: 199, Board: 34).
+          All 8 tickets are <strong>Done</strong>. Sprint 1 code was delivered before the
+          Jira sprint was formally activated — the sprint exists in Jira for traceability
+          with all tickets assigned to it.
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Order</th><th>Key</th><th>Summary</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-6" target="_blank"><code>BAN-6</code></a></td>
+              <td>FR-01 User Registration API + validation rules</td>
+              <td>✅ Done</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-10" target="_blank"><code>BAN-10</code></a></td>
+              <td>FR-04 Create default Savings account on user registration ($0.00)</td>
+              <td>✅ Done</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-7" target="_blank"><code>BAN-7</code></a></td>
+              <td>FR-02 Login/Logout with secure session + lockout after 3 failures</td>
+              <td>✅ Done</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-18" target="_blank"><code>BAN-18</code></a></td>
+              <td>FR-10 Audit log table + logging for key actions (success + failure)</td>
+              <td>✅ Done</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-11" target="_blank"><code>BAN-11</code></a></td>
+              <td>FR-05 Account details endpoint + last 10 transactions</td>
+              <td>✅ Done</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-14" target="_blank"><code>BAN-14</code></a></td>
+              <td>FR-07 Deposit endpoint with min/max validation</td>
+              <td>✅ Done</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-16" target="_blank"><code>BAN-16</code></a></td>
+              <td>NFR-06 Ensure transaction atomicity (DB transaction + rollback on failure)</td>
+              <td>✅ Done</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-15" target="_blank"><code>BAN-15</code></a></td>
+              <td>FR-08 Internal transfer with business rules + daily limit ($5,000)</td>
+              <td>✅ Done</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr>
+
+      <!-- ═══ BACKLOG ═══ -->
+      <h2>Remaining Backlog (Sprint 3 Candidates)</h2>
+      <p>These tickets are in the Jira backlog and are not yet assigned to a sprint. They represent the frontend layer to be built on top of the completed API.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Key</th><th>Summary</th><th>Category</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-19" target="_blank"><code>BAN-19</code></a></td>
+              <td>Frontend UI-01 Dashboard layout (balance card + quick actions)</td>
+              <td>Frontend</td>
+            </tr>
+            <tr>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-20" target="_blank"><code>BAN-20</code></a></td>
+              <td>Frontend UI-02 Forms: real-time validation + toast notifications</td>
+              <td>Frontend</td>
+            </tr>
+            <tr>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-21" target="_blank"><code>BAN-21</code></a></td>
+              <td>Frontend UI-03 Responsiveness (320px–1920px) + dark/light toggle</td>
+              <td>Frontend</td>
+            </tr>
+            <tr>
+              <td><a href="https://joselitan.atlassian.net/browse/BAN-22" target="_blank"><code>BAN-22</code></a></td>
+              <td>Frontend UI-04 Accessibility: labels/aria + keyboard navigation</td>
+              <td>Frontend</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">ℹ️</span>
+        <div>The 4 Frontend UI tickets (BAN-19 – BAN-22) are natural candidates for <strong>Sprint 3</strong>, which will focus on building the web interface layer on top of the completed and tested API.</div>
+      </div>
+
+      <hr>
+
+      <!-- ═══ SPRINT LIFECYCLE ═══ -->
+      <h2>Sprint Lifecycle in Jira</h2>
+      <p>Sprints on board 34 are managed programmatically via <code>tools/jira/agile.py</code>. The full lifecycle from creation to activation is:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Step</th><th>Function</th><th>Jira State</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><code>create_sprint(board_id, name)</code></td>
+              <td><code>future</code></td>
+              <td>Creates the sprint shell on the board. No dates set yet. Sprint appears in backlog.</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><code>add_issues_to_sprint(sprint_id, keys)</code></td>
+              <td><code>future</code></td>
+              <td>Moves tickets from the backlog into the sprint. Tickets become visible in the sprint column on the board.</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><code>start_sprint(sprint_id, start_date, end_date)</code></td>
+              <td><code>active</code></td>
+              <td>Activates the sprint. Sets start/end dates, transitions state to <code>active</code>. The sprint now appears on the active board view and is trackable.</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><code>close_sprint(sprint_id)</code></td>
+              <td><code>closed</code></td>
+              <td>Closes the sprint at the end of the iteration. Any unfinished tickets are moved to the backlog or next sprint automatically by Jira.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">⚠️</span>
+        <div><strong>Sprint 1 note:</strong> "BAN Sprint 1" (ID 199) is in <code>future</code> state because the Sprint 1 work was done before the Jira sprint was created. The sprint can be left as-is for traceability or manually closed via the Jira UI.</div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>

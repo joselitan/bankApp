@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Testing — SecureCore Bank Docs</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sb-header">
+      <a href="index.html" class="sb-logo">
+        <div class="sb-logo-icon">🏦</div>
+        <div>
+          <div class="sb-logo-name">SecureCore Bank</div>
+          <div class="sb-logo-sub">v0.1.0 · MVP Docs</div>
+        </div>
+      </a>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-group">Getting Started</div>
+      <a href="index.html"           class="sb-link"><span class="icon">🏠</span> Home</a>
+      <a href="overview.html"        class="sb-link"><span class="icon">🔍</span> System Overview</a>
+      <a href="getting-started.html" class="sb-link"><span class="icon">🚀</span> Getting Started</a>
+      <div class="sb-group">Reference</div>
+      <a href="api-reference.html"   class="sb-link"><span class="icon">📡</span> API Reference</a>
+      <a href="data-models.html"     class="sb-link"><span class="icon">🗃</span> Data Models</a>
+      <div class="sb-group">Diagrams &amp; Flows</div>
+      <a href="use-cases.html"       class="sb-link"><span class="icon">🎯</span> Use Cases</a>
+      <a href="auth-flow.html"       class="sb-link"><span class="icon">🔐</span> Auth Flow</a>
+      <a href="transactions.html"    class="sb-link"><span class="icon">💸</span> Transaction Flows</a>
+      <div class="sb-group">Development</div>
+      <a href="sprints.html"         class="sb-link"><span class="icon">🏃</span> Sprints</a>
+      <a href="testing.html"         class="sb-link"><span class="icon">🧪</span> Testing</a>
+      <a href="cicd.html"            class="sb-link"><span class="icon">⚙️</span> CI / CD</a>
+    </nav>
+    <div class="sb-footer">SecureCore Bank &copy; 2026</div>
+  </aside>
+
+  <main class="main">
+    <div class="content">
+
+      <div class="page-hdr">
+        <div class="breadcrumb">Development</div>
+        <h1>Testing</h1>
+        <p class="lead">Test suite architecture, coverage per JIRA ticket, and instructions for running tests locally and in CI.</p>
+      </div>
+
+      <h2>Test Approach</h2>
+      <p>All tests are <strong>API-level integration tests</strong> using FastAPI's <code>TestClient</code> (backed by <code>httpx</code>). There are no unit tests in isolation — each test exercises a complete HTTP request-response cycle including routing, business logic, database writes, and response serialisation.</p>
+
+      <p>This approach validates the full application stack and matches how the API is actually used by consumers.</p>
+
+      <h2>Test Isolation</h2>
+      <p>Each test gets a <strong>fresh, independent SQLite database</strong>. The <code>conftest.py</code> fixture creates a temporary database file using Python's <code>tempfile</code> module, patches the application settings, and tears down the file after the test completes.</p>
+
+      <pre><code># tests/conftest.py (simplified)
+@pytest.fixture()
+def client(monkeypatch):
+    with temp_db_url() as url:
+        # Override DATABASE_URL with a temp file
+        monkeypatch.setattr(config_module.settings, "DATABASE_URL", url)
+
+        # Recreate engine and session factory for the temp DB
+        engine = create_engine(url, connect_args={"check_same_thread": False})
+        session_module.engine = engine
+        session_module.SessionLocal = sessionmaker(bind=engine)
+
+        app = create_app()
+        with TestClient(app) as c:
+            yield c   # DB tables created via lifespan on app startup</code></pre>
+
+      <div class="callout callout-success">
+        <span class="callout-icon">✅</span>
+        <div>Because each test uses an isolated database file, tests are fully independent and can run in any order. No <code>truncate</code> or manual cleanup is needed.</div>
+      </div>
+
+      <h2>Running Tests</h2>
+      <pre><code># Run all tests
+pytest
+
+# Run with verbose output
+pytest -v
+
+# Run a specific file
+pytest tests/test_transfer.py -v
+
+# Run with coverage report
+pytest --cov=app --cov-report=term-missing
+
+# Using the Makefile
+make test</code></pre>
+
+      <hr>
+
+      <h2>Test Files</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>File</th><th>JIRA Ticket</th><th>What is Tested</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>test_health.py</code></td>
+              <td>—</td>
+              <td>
+                <ul>
+                  <li>GET <code>/health</code> returns 200 with <code>{"status":"ok"}</code></li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><code>test_auth_register.py</code></td>
+              <td><code>BAN-6</code>, <code>BAN-10</code></td>
+              <td>
+                <ul>
+                  <li>Happy path: 201 with correct response fields including <code>account_number</code></li>
+                  <li>Password too short → 400</li>
+                  <li>Password missing digit → 400</li>
+                  <li>Password missing special char → 400</li>
+                  <li>Duplicate email → 409</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><code>test_auth_login.py</code></td>
+              <td><code>BAN-7</code></td>
+              <td>
+                <ul>
+                  <li>Happy path: 200 with <code>access_token</code></li>
+                  <li>Wrong password → 401</li>
+                  <li>Unknown email → 401</li>
+                  <li>3rd failure triggers lock; 4th attempt → 423</li>
+                  <li>Correct password after lockout expires → 200</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><code>test_accounts_me.py</code></td>
+              <td><code>BAN-11</code></td>
+              <td>
+                <ul>
+                  <li>GET <code>/accounts/me</code> without token → 401</li>
+                  <li>Returns correct <code>account_number</code>, <code>balance</code>, and empty <code>recent_transactions</code> for new user</li>
+                  <li>After deposit: <code>balance</code> and <code>recent_transactions</code> reflect new state</li>
+                  <li>Only last 10 transactions are returned</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><code>test_deposit.py</code></td>
+              <td><code>BAN-14</code></td>
+              <td>
+                <ul>
+                  <li>POST <code>/deposit</code> without token → 401</li>
+                  <li>Amount $0.99 (below min) → 400</li>
+                  <li>Amount $10,000.01 (above max) → 400</li>
+                  <li>Amount $1.00 (exact min) → 201</li>
+                  <li>Amount $10,000.00 (exact max) → 201</li>
+                  <li>Response includes correct <code>deposited</code> and updated <code>balance</code></li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><code>test_transfer.py</code></td>
+              <td><code>BAN-15</code>, <code>BAN-16</code></td>
+              <td>
+                <ul>
+                  <li>POST <code>/transfer</code> without token → 401</li>
+                  <li>Transfer to non-existent email → 400</li>
+                  <li>Transfer to self → 400</li>
+                  <li>Insufficient funds → 400</li>
+                  <li>Daily limit: transfers totalling $5,000.01 → 400 on last</li>
+                  <li>Successful transfer: sender balance decremented, recipient incremented</li>
+                  <li>Atomicity: simulated failure mid-transfer does not alter either balance</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td><code>test_audit_logging.py</code></td>
+              <td><code>BAN-18</code></td>
+              <td>
+                <ul>
+                  <li>Registration success creates a <code>register_success</code> audit row</li>
+                  <li>Failed registration creates a <code>register_failure</code> audit row</li>
+                  <li>Failed login creates a <code>login_failure</code> audit row</li>
+                  <li>Account lockout creates a <code>login_locked</code> audit row</li>
+                  <li>Successful deposit creates a <code>deposit</code> audit row</li>
+                  <li>Failed transfer creates a <code>transfer_failure</code> audit row with correct <code>details</code></li>
+                  <li>Successful transfer creates a <code>transfer</code> audit row</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr>
+
+      <h2>Coverage by JIRA Ticket</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Ticket</th><th>Feature</th><th>Test File(s)</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>BAN-6</code></td>
+              <td>User Registration API + validation</td>
+              <td><code>test_auth_register.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+            <tr>
+              <td><code>BAN-10</code></td>
+              <td>Default Savings account on registration</td>
+              <td><code>test_auth_register.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+            <tr>
+              <td><code>BAN-7</code></td>
+              <td>Login/Logout + lockout after 3 failures</td>
+              <td><code>test_auth_login.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+            <tr>
+              <td><code>BAN-18</code></td>
+              <td>Audit log table + logging for key actions</td>
+              <td><code>test_audit_logging.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+            <tr>
+              <td><code>BAN-11</code></td>
+              <td>Account details + last 10 transactions</td>
+              <td><code>test_accounts_me.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+            <tr>
+              <td><code>BAN-14</code></td>
+              <td>Deposit endpoint with min/max validation</td>
+              <td><code>test_deposit.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+            <tr>
+              <td><code>BAN-16</code></td>
+              <td>Transaction atomicity + rollback on failure</td>
+              <td><code>test_transfer.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+            <tr>
+              <td><code>BAN-15</code></td>
+              <td>Internal transfer with daily limit ($5,000)</td>
+              <td><code>test_transfer.py</code></td>
+              <td>✅ Covered</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">ℹ️</span>
+        <div>All 8 Sprint 1 JIRA tickets have corresponding automated test coverage. The CI pipeline runs the full suite on a weekly schedule via the <code>api-regression.yml</code> GitHub Actions workflow.</div>
+      </div>
+
+    </div>
+  </main>
+
+</div>
+<script>
+  (function(){
+    var cur = location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('.sb-link').forEach(function(a){
+      if (a.getAttribute('href') === cur) a.classList.add('active');
+    });
+  })();
+</script>
+</body>
+</html>
